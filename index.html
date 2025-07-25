@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard Panic Button</title>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css"/>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+  />
+  <!-- <link rel="stylesheet" href="style-index.css"/> -->
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+    }
+
+    header {
+      background-color: #fff;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1002;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+    }
+
+    .header-logo {
+      width: 40px;
+      margin-right: 10px;
+    }
+
+    .header-title {
+      font-size: 22px;
+      font-weight: bold;
+      color: #006400;
+    }
+
+    .sidebar-button {
+      background-color: #006400;
+      color: white;
+      border: none;
+      padding: 10px 12px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-right: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sidebar-button:hover {
+      background-color: rgba(0, 100, 0, 0.8);
+    }
+
+    .sidebar {
+      background-color: #C6E5FF;
+      width: 220px;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      padding: 20px 10px;
+      overflow-y: auto;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease-in-out;
+      z-index: 1001;
+    }
+
+    .sidebar.open {
+      transform: translateX(0);
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .sidebar-logo {
+      width: 35px;
+      margin-right: 10px;
+    }
+
+    .sidebar-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #000;
+    }
+
+    .sidebar-menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sidebar-menu li {
+      margin-bottom: 12px;
+    }
+
+    .sidebar-menu a {
+      color: #000;
+      text-decoration: none;
+      padding: 10px 16px;
+      display: block;
+      border-radius: 5px;
+      transition: background 0.2s;
+    }
+
+    .sidebar-menu a:hover {
+      background-color: #5e6278;
+      color: #fff;
+    }
+
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      display: none;
+      z-index: 1000;
+    }
+
+    .sidebar-overlay.show {
+      display: block;
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding: 20px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr); /* 4 kolom tetap */
+        gap: 20px;
+        transition: margin-left 0.3s ease;
+        }
+
+    .main-content.sidebar-open {
+      margin-left: 220px;
+    }
+
+    .card {
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      text-align: center;
+      transition: transform 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #006400;
+      margin-bottom: 10px;
+    }
+
+    .card-value {
+      font-size: 22px;
+      font-weight: bold;
+      color: #006400;
+      margin-bottom: 8px;
+    }
+
+    .card-content a {
+      text-decoration: none;
+      font-size: 14px;
+      color: #444;
+    }
+
+    @media (max-width: 800px) {
+      .sidebar {
+        width: 75vw;
+        max-width: 280px;
+      }
+
+      .main-content {
+        margin-left: 0 !important;
+      }
+    }
+
+    .live-box {
+        background-color: #fff;
+        border-left: 8px solid #999;
+        padding: 20px;
+        margin-top: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        font-size: 18px;
+        transition: all 0.3s;
+        min-height: 120px; 
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        }
+
+    .live-box-content {
+        width: 100%;
+        text-align: left;
+    }
+    
+    .live-box-message {
+        margin-top: 12px;
+        padding: 8px;
+        background-color: #f1f1f1;
+        border-radius: 4px;
+        font-style: italic;
+    }
+
+    .live-empty {
+        text-align: center;
+        font-weight: bold;
+        font-size: 18px;
+        color: #666;
+        }
+
+
+    .live-box h2 {
+        font-size: 28px;
+        margin: 0 0 10px;
+        color: #222;
+        }
+
+    .live-box p {
+        margin: 4px 0;
+        }
+
+    .live-box a {
+        color: #007BFF;
+        text-decoration: underline;
+        }
+
+    .priority-box {
+        padding: 4px 12px;
+        border-radius: 10px;
+        color: white;
+        font-weight: bold;
+        display: inline-block;
+        }
+
+        .priority-darurat {
+        background-color: red;
+        }
+
+        .priority-penting {
+        background-color: orange;
+        }
+
+        .priority-biasa {
+        background-color: green;
+        }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="header-left">
+      <button class="sidebar-button" onclick="toggleSidebar()" aria-label="Toggle Sidebar">
+        <i class="fas fa-bars" aria-hidden="true"></i>
+      </button>
+      <img src="house.png" alt="Logo" class="header-logo" />
+      <div class="header-title">Dashboard Panic Button - Admin</div>
+    </div>
+  </header>
+
+  <nav class="sidebar" id="sidebar" aria-label="Sidebar navigation">
+    <div class="sidebar-header">
+      <img src="house.png" alt="Logo" class="sidebar-logo" />
+      <div class="sidebar-title">Panic Button</div>
+    </div>
+    <ul class="sidebar-menu">
+      <li><a href="rekap.php">Rekap Data</a></li>
+      <li><a href="monitor.php">Monitor</a></li>
+      <li><a href="user.html">User Registrations</a></li>
+      <li><a href="#">Button</a></li>
+    </ul>
+  </nav>
+
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()" tabindex="-1" aria-hidden="true"></div>
+
+  <main class="main-content" id="mainContent">
+      <a href="rekap.html" class="card" aria-labelledby="rekapTitle" style="text-decoration: none;">
+          <section aria-hidden="true">
+          <h2 class="card-title" id="rekapTitle">Rekap Data</h2>
+          <div class="card-content">
+              <div class="card-value">...</div>
+          </div>
+          </section>
+      </a>
+
+      <a href="monitor.php" class="card" aria-labelledby="monitorTitle" style="text-decoration: none;">
+          <section aria-hidden="true">
+          <h2 class="card-title" id="monitorTitle">Monitor</h2>
+          <div class="card-content">
+              <div class="card-value">...</div>
+          </div>
+          </section>
+      </a>
+
+      <a href="user.html" class="card" aria-labelledby="userRegTitle" style="text-decoration: none;">
+          <section aria-hidden="true">
+          <h2 class="card-title" id="userRegTitle">User Registrations</h2>
+          <div class="card-content">
+              <div class="card-value">...</div>
+          </div>
+          </section>
+      </a>
+
+      <a href="#" class="card" aria-labelledby="buttonTitle" style="text-decoration: none;">
+          <section aria-hidden="true">
+          <h2 class="card-title" id="buttonTitle">Status Button</h2>
+          <div class="card-content">
+              <div class="card-value" style="text-transform: uppercase;">...</div>
+          </div>
+          </section>
+      </a>
+
+      <div id="liveAlert" class="live-box" style="grid-column: 1 / -1;">
+          <div class="live-empty">🚨 Peringatan Darurat Akan Tampil Disini</div>
+      </div>
+
+  </main>
+
+  <script>
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("sidebarOverlay");
+    const mainContent = document.getElementById("mainContent");
+
+    function toggleSidebar() {
+      sidebar.classList.toggle("open");
+      overlay.classList.toggle("show");
+      if (window.innerWidth > 800) {
+        mainContent.classList.toggle("sidebar-open");
+      }
+    }
+
+    function closeSidebar() {
+      sidebar.classList.remove("open");
+      overlay.classList.remove("show");
+      mainContent.classList.remove("sidebar-open");
+    }
+
+    // Responsive behavior on window resize
+    window.addEventListener("resize", () => {
+      if (window.innerWidth > 800 && sidebar.classList.contains("open")) {
+        mainContent.classList.add("sidebar-open");
+      } else {
+        mainContent.classList.remove("sidebar-open");
+      }
+    });
+  </script>
+
+  <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+      import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+
+      const firebaseConfig = {
+          apiKey: "--",
+          authDomain: "--",
+          databaseURL: "--",
+          projectId: "--",
+          storageBucket: "--",
+          messagingSenderId: "--",
+          appId: "--",
+          measurementId: "--"
+          };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+
+      const monitorRef = ref(db, 'monitor');
+      const usersRef = ref(db, 'users');
+      const buzzerRef = ref(db, 'buzzer');
+      const buzzerPriorityRef = ref(db, 'buzzer_priority');
+
+      // Hitung jumlah data di "monitor"
+      onValue(monitorRef, snapshot => {
+          const data = snapshot.val();
+          const count = data ? Object.keys(data).length : 0;
+          document.querySelector('.card:nth-child(1) .card-value').textContent = count; // Rekap Data
+          document.querySelector('.card:nth-child(2) .card-value').textContent = count + '%'; // Monitor (misal persentase dummy)
+      });
+
+      // Hitung jumlah user
+      onValue(usersRef, snapshot => {
+          const data = snapshot.val();
+          const count = data ? Object.keys(data).length : 0;
+          document.querySelector('.card:nth-child(3) .card-value').textContent = count; // User Registrations
+      });
+
+      // Update status button card
+      onValue(buzzerPriorityRef, snapshot => {
+          const status = snapshot.val();
+          document.querySelector('.card:nth-child(4) .card-value').textContent = status ?? 'N/A'; // Button
+      });
+
+      // --- LOGIKA BARU UNTUK KOTAK PERINGATAN ---
+      const liveAlertBox = document.getElementById("liveAlert");
+
+      // Pantau status 'buzzer' sebagai pemicu utama
+      onValue(buzzerRef, (buzzerSnapshot) => {
+          const status = buzzerSnapshot.val();
+
+          if (status && status.toLowerCase() === 'on') {
+              // JIKA BUZZER "ON": Ambil data terbaru dari 'monitor' dan tampilkan
+              onValue(monitorRef, (monitorSnapshot) => {
+                  const data = monitorSnapshot.val();
+                  if (!data || Object.keys(data).length === 0) {
+                      liveAlertBox.innerHTML = `<div class="live-empty">Menunggu data peringatan...</div>`;
+                      liveAlertBox.style.borderLeftColor = "#999";
+                      return;
+                  }
+
+                  const latestKey = Object.keys(data).sort().reverse()[0];
+                  const latest = data[latestKey];
+
+                  const houseNumber = latest.houseNumber || "Tidak Diketahui";
+                  const time = latest.time || "-";
+                  const lat = latest.latitude ?? "-";
+  const long = latest.longitude ?? "-";
+                  const priority = latest.priority || "biasa";
+                  const message = latest.message || "-"; // <-- BARIS BARU: Mengambil data pesan
+
+                  let borderColor = "green";
+                  let priorityClass = "priority-biasa";
+                  if (priority.toLowerCase() === "darurat") {
+                      borderColor = "red";
+                      priorityClass = "priority-darurat";
+                  } else if (priority.toLowerCase() === "penting") {
+                      borderColor = "orange";
+                      priorityClass = "priority-penting";
+                  }
+                  
+                  const mapsLink = (lat !== '-' && long !== '-')
+                      ? `<a href="https://www.google.com/maps?q=${lat},${long}" target="_blank">Buka Lokasi</a>`
+                      : `<span>Lokasi tidak tersedia</span>`;
+                  
+                  liveAlertBox.style.borderLeftColor = borderColor;
+                  // Ganti seluruh isi liveAlertBox dengan detail peringatan
+                  liveAlertBox.innerHTML = `
+                    <div class="live-box-content">
+                        <h2>Nomor Rumah: ${houseNumber}</h2>
+                        <p>Waktu: ${time}</p>
+                        <p>Lokasi: ${mapsLink}</p>
+                        <p>Prioritas: <span class="priority-box ${priorityClass}">${priority}</span></p>
+                        <p class="live-box-message"><strong>Pesan:</strong> ${message}</p> </div>
+                  `;
+
+              }, { once: true });
+          } else {
+              // JIKA BUZZER "OFF": Tampilkan pesan placeholder
+              liveAlertBox.innerHTML = `<div class="live-empty">🚨 Peringatan Darurat Akan Tampil Disini</div>`;
+              liveAlertBox.style.borderLeftColor = "#999"; // Reset warna border
+          }
+      });
+  </script>
+
+</body>
+</html>

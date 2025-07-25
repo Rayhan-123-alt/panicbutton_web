@@ -1,0 +1,6 @@
+# .gitignore
+firebase-config.js
+.env
+*.log
+*.bak
+*.sqlite

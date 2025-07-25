@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Rekap Laporan Panic Button</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+
+    const firebaseConfig = {
+          apiKey: "--",
+          authDomain: "--",
+          databaseURL: "--",
+          projectId: "--",
+          storageBucket: "--",
+          messagingSenderId: "--",
+          appId: "--",
+          measurementId: "--"
+          };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const monitorRef = ref(db, 'monitor');
+
+    let allData = [];
+    let currentPage = 1;
+    const rowsPerPage = 10;
+    let sortColumn = 'time';
+    let sortDirection = -1;
+
+    let filterPriority = "all";
+    let filterStatus = "all";
+
+    onValue(monitorRef, (snapshot) => {
+      const data = snapshot.val();
+      allData = [];
+
+      for (const id in data) {
+        allData.push(data[id]);
+      }
+      allData.reverse();
+
+      currentPage = 1;
+      renderTable();
+    });
+
+    window.renderTable = function () {
+      const tbody = document.getElementById("monitorTableBody");
+      const search = document.getElementById("searchInput").value.toLowerCase();
+
+      let filtered = allData.filter(item => {
+        const matchSearch =
+          item.name.toLowerCase().includes(search) ||
+          item.houseNumber.toLowerCase().includes(search) ||
+          item.message.toLowerCase().includes(search);
+        const matchPriority = filterPriority === "all" || item.priority.toLowerCase() === filterPriority;
+        const matchStatus = filterStatus === "all" || item.status.toLowerCase() === filterStatus;
+        return matchSearch && matchPriority && matchStatus;
+      });
+
+      if (sortColumn) {
+        filtered.sort((a, b) => {
+          let valA = a[sortColumn] || '';
+          let valB = b[sortColumn] || '';
+          if (sortColumn === 'time') {
+            valA = new Date(valA);
+            valB = new Date(valB);
+          }
+          return (valA > valB ? 1 : valA < valB ? -1 : 0) * sortDirection;
+        });
+      }
+
+      const start = (currentPage - 1) * rowsPerPage;
+      const paginated = filtered.slice(start, start + rowsPerPage);
+
+      tbody.innerHTML = paginated.map(m => `
+        <tr>
+          <td data-label="Nama">${m.name}</td>
+          <td data-label="No. Rumah">${m.houseNumber}</td>
+          <td data-label="Pesan">${m.message}</td>
+          <td data-label="Prioritas"><span class="tag ${m.priority.toLowerCase()}">${m.priority}</span></td>
+          <td data-label="Status">${m.status}</td>
+          <td data-label="Waktu">${m.time}</td>
+          <td data-label="Lokasi">
+            <a href="https://www.google.com/maps?q=${m.latitude},${m.longitude}" target="_blank" style=text-decoration:none;>
+              Buka Di Sini
+            </a>
+          </td>
+
+        </tr>
+      `).join("");
+
+      if (paginated.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7">Tidak ada data ditemukan.</td></tr>`;
+      }
+
+      renderPagination(filtered.length);
+      closeAllDropdowns();
+    };
+
+    window.renderPagination = function (total) {
+      const pageCount = Math.ceil(total / rowsPerPage);
+      const pagination = document.getElementById("pagination");
+      pagination.innerHTML = "";
+
+      for (let i = 1; i <= pageCount; i++) {
+        pagination.innerHTML += `<button onclick="changePage(${i})" ${i === currentPage ? 'disabled' : ''}>${i}</button>`;
+      }
+    };
+
+    window.changePage = function (page) {
+      currentPage = page;
+      renderTable();
+    };
+
+    window.sortBy = function (col) {
+      if (sortColumn === col) {
+        sortDirection *= -1;
+      } else {
+        sortColumn = col;
+        sortDirection = -1;
+      }
+      renderTable();
+    };
+
+    window.setFilterPriority = function (val) {
+      filterPriority = val;
+      currentPage = 1;
+      renderTable();
+      closeAllDropdowns();
+    };
+
+    window.setFilterStatus = function (val) {
+      filterStatus = val;
+      currentPage = 1;
+      renderTable();
+      closeAllDropdowns();
+    };
+
+    window.exportToExcel = function () {
+      const wsData = [
+        ["Nama", "No. Rumah", "Pesan", "Prioritas", "Status", "Waktu", "Latitude", "Longitude"]
+      ];
+      allData.forEach(m => {
+        wsData.push([m.name, m.houseNumber, m.message, m.priority, m.status, m.time, m.latitude, m.longitude]);
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Laporan Panic Button");
+      XLSX.writeFile(wb, "rekap_panic_button.xlsx");
+    };
+
+    window.toggleDropdown = function(id) {
+      const dropdown = document.getElementById(id);
+      const isVisible = dropdown.style.display === "block";
+
+      closeAllDropdowns();
+
+      dropdown.style.display = isVisible ? "none" : "block";
+    };
+
+    function closeAllDropdowns() {
+      document.querySelectorAll(".dropdown").forEach(d => {
+        d.style.display = "none";
+      });
+    }
+
+    window.onclick = function(event) {
+      if (!event.target.matches('.filter-button')) {
+        closeAllDropdowns();
+      }
+    };
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    /* ... (style unchanged except adding cursor pointer to dropdown items) ... */
+    * {
+      box-sizing: border-box;
+    }
+    .dropdown div {
+      padding: 8px 12px;
+      cursor: pointer;
+      user-select: none;
+      color: #333; /* Abu-abu gelap, lebih soft dari hitam pekat */
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f8f9fa;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 16px;
+    }
+    .back-button {
+      display: inline-block;
+      margin-bottom: 16px;
+      padding: 8px 14px;
+      background-color: #00796b;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+    #tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    input, button {
+      padding: 10px 14px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    button {
+      background-color: #00796b;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover:not(:disabled) {
+      background-color: #005f56;
+    }
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    th {
+      background-color: #00796b;
+      color: white;
+      cursor: pointer;
+    }
+    .tag {
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-weight: bold;
+      text-transform: capitalize;
+      display: inline-block;
+    }
+    .darurat {
+      background-color: #e53935;
+      color: white;
+    }
+    .penting {
+      background-color: #fdd835;
+      color: black;
+    }
+    .biasa {
+      background-color: #43a047;
+      color: white;
+    }
+    #pagination {
+      margin-top: 16px;
+      text-align: center;
+    }
+    #pagination button {
+      margin: 2px;
+      padding: 6px 12px;
+      font-size: 14px;
+    }
+    .dropdown-container {
+      position: relative;
+      display: inline-block;
+    }
+    .dropdown {
+      display: none;
+      position: absolute;
+      background-color: #fff;
+      min-width: 120px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      z-index: 1000;
+      border-radius: 4px;
+      margin-top: 4px;
+      padding: 4px 0;
+    }
+    .dropdown div {
+      padding: 8px 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .dropdown div:hover {
+      background-color: #f1f1f1;
+    }
+    .filter-button {
+      background-color: #00796b;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    /* Responsive */
+    @media (max-width: 768px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      thead {
+        display: none;
+      }
+      tr {
+        margin-bottom: 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: white;
+        padding: 10px;
+      }
+      td {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 10px;
+        border: none;
+        border-bottom: 1px solid #eee;
+      }
+      td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        color: #555;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-button">&larr; Kembali</a>
+  <h1>Rekap Laporan Panic Button</h1>
+
+  <div id="tools">
+    <input type="text" id="searchInput" placeholder="Cari data..." onkeyup="renderTable()" />
+    <button onclick="exportToExcel()">Export Excel</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th onclick="sortBy('name')">Nama</th>
+        <th onclick="sortBy('houseNumber')">No. Rumah</th>
+        <th onclick="sortBy('message')">Pesan</th>
+        <th>
+          <div class="dropdown-container">
+            <button class="filter-button" onclick="toggleDropdown('priorityDropdown')">Prioritas ▼</button>
+            <div class="dropdown" id="priorityDropdown" >
+              <div onclick="setFilterPriority('all')">Semua</div>
+              <div onclick="setFilterPriority('darurat')">Darurat</div>
+              <div onclick="setFilterPriority('penting')">Penting</div>
+              <div onclick="setFilterPriority('biasa')">Biasa</div>
+            </div>
+          </div>
+        </th>
+        <th>
+          <div class="dropdown-container">
+            <button class="filter-button" onclick="toggleDropdown('statusDropdown')">Status ▼</button>
+            <div class="dropdown" id="statusDropdown">
+              <div onclick="setFilterStatus('all')">Semua</div>
+              <div onclick="setFilterStatus('proses')">Proses</div>
+              <div onclick="setFilterStatus('selesai')">Selesai</div>
+            </div>
+          </div>
+        </th>
+        <th onclick="sortBy('time')">Waktu</th>
+        <th>Lokasi</th>
+      </tr>
+    </thead>
+    <tbody id="monitorTableBody">
+      <tr><td colspan="7">Memuat data...</td></tr>
+    </tbody>
+  </table>
+
+  <div id="pagination"></div>
+</body>
+</html>
