@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Statistik Panic Button</title>
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+  :root {
+    --primary: #006400;
+    --success: #4CAF50;
+    --warning: #FFC107;
+    --danger: #e53935;
+    --info: #2196f3;
+    --bg: #f4f4f4;
+    --text: #333;
+    --white: #fff;
+  }
+
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 20px 10px;
+  }
+
+  h1 {
+    text-align: center;
+    color: var(--primary);
+    font-size: 1.8rem;
+    margin-bottom: 30px;
+  }
+
+  h2 {
+    font-size: 1.1rem;
+    text-align: center;
+    margin-bottom: 12px;
+    color: #444;
+  }
+
+  .back-button {
+    display: block;
+    text-align: center;
+    background-color: var(--primary);
+    color: var(--white);
+    text-decoration: none;
+    font-weight: bold;
+    padding: 10px 20px;
+    margin: 10px auto 25px;
+    border-radius: 8px;
+    width: fit-content;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: background 0.3s;
+  }
+
+  .back-button:hover {
+    background-color: #004d00;
+  }
+
+  .chart-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 25px;
+    max-width: 1200px;
+    margin: auto;
+  }
+
+  .chart-container {
+    background: var(--white);
+    padding: 20px 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.07);
+    transition: transform 0.3s ease;
+  }
+
+  .chart-container:hover {
+    transform: translateY(-4px);
+  }
+
+  .chart-users {
+    margin-top: 30px;
+  }
+
+  canvas {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  @media (min-width: 768px) {
+    .chart-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 35px;
+    }
+
+    .chart-users {
+      margin-top: 45px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  /* Loading Overlay */
+  #loadingOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    font-family: 'Segoe UI', sans-serif;
+    color: var(--primary);
+    font-size: 18px;
+  }
+
+  .spinner {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid var(--primary);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Dark mode */
+  @media (prefers-color-scheme: light) {
+    body {
+      background: #121212;
+      color: #eee;
+    }
+
+    .chart-container {
+      background: #1e1e1e;
+      color: #eee;
+    }
+
+    .back-button {
+      background-color: #90ee90;
+      color: #121212;
+    }
+
+    .back-button:hover {
+      background-color: #6dc76d;
+    }
+
+    #loadingOverlay {
+      background: #121212;
+      color: #90ee90;
+    }
+
+    .spinner {
+      border-top: 6px solid #90ee90;
+    }
+  }
+</style>
+
+
+</head>
+<body>
+    
+<a href="/" class="back-button">← Kembali ke Dashboard</a>
+
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <div>Sedang mengambil data...</div>
+</div>
+
+<h1>Statistik Panic Button</h1>
+
+<div class="chart-grid">
+  <!-- Grafik 1: Prioritas -->
+  <div class="chart-container">
+    <h2>Prioritas Peringatan</h2>
+    <canvas id="barChart"></canvas>
+  </div>
+
+  <!-- Grafik 2: Status -->
+  <div class="chart-container">
+    <h2>Status Peringatan (Selesai vs Proses)</h2>
+    <canvas id="pieChart"></canvas>
+  </div>
+</div>
+
+<!-- Grafik 3: Ranking -->
+<div class="chart-container chart-users">
+  <h2>Ranking Jumlah Tekan Tombol per Pengguna</h2>
+  <canvas id="rankingChart"></canvas>
+</div>
+
+
+
+
+<!-- Firebase JS -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+
+  const firebaseConfig = {
+      apiKey: "--",
+      authDomain: "--",
+      databaseURL: "--",
+      projectId: "--",
+      storageBucket: "--",
+      messagingSenderId: "--",
+      appId: "--",
+      measurementId: "--"
+    };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const monitorRef = ref(db, 'monitor');
+
+  let barChart, pieChart, lineChart;
+
+  function createInitialData() {
+    return {
+      darurat: 0,
+      penting: 0,
+      biasa: 0,
+      statusSelesai: 0,
+      statusProses: 0,
+      usersData: {}
+    };
+  }
+
+  function updateCharts(data) {
+    // Bar Chart
+    const barData = {
+    labels: ['Darurat', 'Penting', 'Biasa'],
+    datasets: [{
+        label: 'Jumlah Peringatan',
+        data: [data.darurat, data.penting, data.biasa],
+        backgroundColor: ['#e53935', '#ffb300', '#43a047'],
+    }]
+    };
+
+    if (barChart) barChart.destroy();
+
+    barChart = new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: barData,
+    options: {
+        responsive: true,
+        aspectRatio: window.innerWidth < 600 ? 1.2 : 2,
+        scales: { y: { beginAtZero: true } },
+        plugins: {
+        legend: {
+            display: false  // ini yang menghilangkan legend
+        }
+        }
+    }
+    });
+
+
+    // Pie Chart
+    const totalStatus = data.statusSelesai + data.statusProses || 1;
+    const selesaiPercent = ((data.statusSelesai / totalStatus) * 100).toFixed(1);
+    const prosesPercent = ((data.statusProses / totalStatus) * 100).toFixed(1);
+
+    const pieData = {
+      labels: [
+        `Selesai ${selesaiPercent}%`,
+        `Proses ${prosesPercent}%`
+      ],
+      datasets: [{
+        data: [data.statusSelesai, data.statusProses],
+        backgroundColor: ['#4CAF50', '#FFC107'],
+        hoverOffset: 30
+      }]
+    };
+    if (pieChart) pieChart.destroy();
+    pieChart = new Chart(document.getElementById('pieChart'), {
+      type: 'pie',
+      data: pieData,
+      options: {
+        responsive: true,
+        aspectRatio: window.innerWidth < 600 ? 1 : 1.5
+        }
+
+    });
+
+    // Horizontal Bar Chart - Ranking Pengguna
+const ranking = Object.entries(data.usersData).map(([name, userData]) => ({
+  name,
+  total: userData.timestamps.length
+}));
+
+// Urutkan dari yang terbanyak
+ranking.sort((a, b) => b.total - a.total);
+
+const rankingLabels = ranking.map(item => item.name);
+const rankingCounts = ranking.map(item => item.total);
+
+const rankingData = {
+  labels: rankingLabels,
+  datasets: [{
+    label: 'Jumlah Tekan Tombol',
+    data: rankingCounts,
+    backgroundColor: '#2196f3'
+  }]
+};
+
+if (lineChart) lineChart.destroy();
+lineChart = new Chart(document.getElementById('rankingChart'), {
+  type: 'bar',
+  data: rankingData,
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    aspectRatio: window.innerWidth < 600 ? 1.5 : 2,
+    scales: {
+      x: {
+        beginAtZero: true,
+        title: { display: true, text: 'Jumlah Tekan Tombol' },
+        ticks: { precision: 0 }
+      },
+      y: {
+        title: { display: true, text: 'Nama Pengguna' }
+      }
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: { mode: 'index', intersect: false }
+    }
+  }
+});
+  }
+
+  onValue(monitorRef, (snapshot) => {
+    const raw = snapshot.val();
+    if (!raw) return updateCharts(createInitialData());
+
+    const data = createInitialData();
+
+    Object.values(raw).forEach(item => {
+      if (!item) return;
+
+      const prio = (item.priority || "").toLowerCase();
+      if (prio === "darurat") data.darurat++;
+      else if (prio === "penting") data.penting++;
+      else data.biasa++;
+
+      const status = (item.status || "").toLowerCase();
+      if (status === "selesai") data.statusSelesai++;
+      else data.statusProses++;
+
+      const name = item.name || "Unknown";
+      const timeStr = item.time || "";
+      const date = timeStr.split(" ")[0] || "???";
+
+      if (!data.usersData[name]) data.usersData[name] = { timestamps: [] };
+      data.usersData[name].timestamps.push({ date });
+    });
+
+    updateCharts(data);
+    document.getElementById('loadingOverlay').style.display = 'none';
+  });
+</script>
+
+</body>
+</html>

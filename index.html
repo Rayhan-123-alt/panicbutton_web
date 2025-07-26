@@ -4,13 +4,56 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard Panic Button</title>
+
+  <!-- Style dan Font -->
   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css"/>
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
-  />
-  <!-- <link rel="stylesheet" href="style-index.css"/> -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
+
   <style>
+    /* Loading Overlay Fullscreen */
+    #loadingOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #f4f4f4;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 11000;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #006400;
+      user-select: none;
+      transition: opacity 0.3s ease;
+    }
+
+    /* Spinner */
+    .spinner {
+      border: 8px solid #dcdcdc;
+      border-top: 8px solid #006400;
+      border-radius: 50%;
+      width: 70px;
+      height: 70px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+      box-shadow: 0 0 15px #00640088;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+
+    /* Loading text */
+    #loadingText {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-shadow: 0 1px 2px #b0b0b0;
+    }
+
     * {
       box-sizing: border-box;
     }
@@ -21,6 +64,7 @@
       background-color: #f4f4f4;
     }
 
+    /* Header */
     header {
       background-color: #fff;
       padding: 15px 20px;
@@ -66,6 +110,7 @@
       background-color: rgba(0, 100, 0, 0.8);
     }
 
+    /* Sidebar */
     .sidebar {
       background-color: #C6E5FF;
       width: 220px;
@@ -140,14 +185,16 @@
       display: block;
     }
 
+    /* Main Content */
     .main-content {
-        margin-left: 0;
-        padding: 20px;
-        display: grid;
-        grid-template-columns: repeat(4, 1fr); /* 4 kolom tetap */
-        gap: 20px;
-        transition: margin-left 0.3s ease;
-        }
+      margin-left: 0;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      transition: margin-left 0.3s ease;
+    }
+
 
     .main-content.sidebar-open {
       margin-left: 220px;
@@ -155,16 +202,19 @@
 
     .card {
       background-color: #fff;
-      border-radius: 10px;
+      border-radius: 12px;
       padding: 15px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       text-align: center;
-      transition: transform 0.2s;
+      transition: all 0.3s ease;
+      cursor: pointer;
     }
 
     .card:hover {
-      transform: translateY(-4px);
-    }
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  background-color: #f0f8ff; /* biru muda lembut */
+}
 
     .card-title {
       font-size: 18px;
@@ -186,91 +236,212 @@
       color: #444;
     }
 
-    @media (max-width: 800px) {
+    /* Card Status Button */
+.card-status {
+  display: block;
+  grid-column: 1 / -1;
+  padding: 1px;
+  font-size: 40px;
+  font-weight: bold;
+  color: #fff;
+  text-align: center;
+  transition: background-color 0.3s ease;
+}
+
+
+/* Warna dinamis berdasarkan prioritas */
+.card-status.biasa {
+  background-color: #10962f !important; /* Hijau */
+  color: #fff;
+}
+
+.card-status.penting {
+  background-color: #ffc107 !important; /* Kuning */
+  color: black;
+}
+
+.card-status.darurat {
+  background-color: #c11325 !important; /* Merah */
+  color: #fff;
+}
+
+
+    /* Responsive */
+    @media (max-width: 768px) {
       .sidebar {
-        width: 75vw;
-        max-width: 280px;
+        width: 80vw;
+        max-width: 300px;
       }
 
       .main-content {
+        grid-template-columns: 1fr;
+        padding: 16px;
+        gap: 16px;
         margin-left: 0 !important;
+      }
+
+      .card {
+        width: 100%;
+        padding: 20px 16px;
+      }
+
+      .header-title {
+        font-size: 18px;
+        white-space: normal;
+      }
+
+      .header-left {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+
+      .live-box {
+        font-size: 16px;
+        padding: 16px;
+      }
+
+      .live-box h2 {
+        font-size: 20px;
+      }
+
+      .sidebar-title {
+        font-size: 16px;
       }
     }
 
+
+    /* Live Box */
     .live-box {
-        background-color: #fff;
-        border-left: 8px solid #999;
-        padding: 20px;
-        margin-top: 30px;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-        font-size: 18px;
-        transition: all 0.3s;
-        min-height: 120px; 
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        }
+      background-color: #fff;
+      border-left: 8px solid #999;
+      padding: 20px;
+      /* margin-top: 1px; */
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+      font-size: 18px;
+      transition: all 0.3s;
+      min-height: 120px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
     .live-box-content {
-        width: 100%;
-        text-align: left;
+      width: 100%;
+      text-align: left;
     }
-    
+
     .live-box-message {
-        margin-top: 12px;
-        padding: 8px;
-        background-color: #f1f1f1;
-        border-radius: 4px;
-        font-style: italic;
+      margin-top: 12px;
+      padding: 8px;
+      background-color: #f1f1f1;
+      border-radius: 4px;
+      font-style: italic;
     }
 
     .live-empty {
-        text-align: center;
-        font-weight: bold;
-        font-size: 18px;
-        color: #666;
-        }
-
+      text-align: center;
+      font-weight: bold;
+      font-size: 18px;
+      color: #666;
+    }
 
     .live-box h2 {
-        font-size: 28px;
-        margin: 0 0 10px;
-        color: #222;
-        }
+      font-size: 28px;
+      margin: 0 0 10px;
+      color: #222;
+    }
 
     .live-box p {
-        margin: 4px 0;
-        }
+      margin: 4px 0;
+    }
 
     .live-box a {
-        color: #007BFF;
-        text-decoration: underline;
-        }
+      color: #007BFF;
+      text-decoration: underline;
+    }
 
     .priority-box {
-        padding: 4px 12px;
-        border-radius: 10px;
-        color: white;
-        font-weight: bold;
-        display: inline-block;
-        }
+      padding: 4px 12px;
+      border-radius: 10px;
+      color: white;
+      font-weight: bold;
+      display: inline-block;
+    }
 
-        .priority-darurat {
-        background-color: red;
-        }
+    .priority-darurat {
+      background-color: red;
+    }
 
-        .priority-penting {
-        background-color: orange;
-        }
+    .priority-penting {
+      background-color: orange;
+    }
 
-        .priority-biasa {
-        background-color: green;
-        }
+    .priority-biasa {
+      background-color: green;
+    }
+
+    /* Kartu khusus untuk link ke statistik */
+    .special-card {
+      background-color: #f3f0ff;
+      border-left: 5px solid #6c63ff;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .special-card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 8px 20px rgba(108, 99, 255, 0.2);
+    }
+
+    /* Dark Mode Adaptasi */
+    body.dark-mode .special-card {
+      background-color: #292846;
+      border-left-color: #9f94ff;
+      color: #eee;
+    }
+
+    .card-status .card-value {
+  font-size: 24px;
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+}
+
+/* Warna teks berdasarkan prioritas */
+.card-status.biasa .card-value {
+  color: #fff;
+}
+
+.card-status.penting .card-value {
+  color: black;
+}
+
+.card-status.darurat .card-value {
+  color: #fff;
+}
+
+/* Judul (card-title) ikut berubah warna */
+.card-status.biasa .card-title {
+  color: #fff;
+}
+
+.card-status.penting .card-title {
+  color: black;
+}
+
+.card-status.darurat .card-title {
+  color: #fff;
+}
+
+
   </style>
 </head>
 
 <body>
+  <div id="loadingOverlay" role="alert" aria-live="assertive" aria-busy="true">
+    <div class="spinner" aria-hidden="true"></div>
+    <div id="loadingText">Sedang memuat dashboard...</div>
+  </div>
+  <!-- Header -->
   <header>
     <div class="header-left">
       <button class="sidebar-button" onclick="toggleSidebar()" aria-label="Toggle Sidebar">
@@ -281,64 +452,66 @@
     </div>
   </header>
 
+  <!-- Sidebar -->
   <nav class="sidebar" id="sidebar" aria-label="Sidebar navigation">
     <div class="sidebar-header">
       <img src="house.png" alt="Logo" class="sidebar-logo" />
       <div class="sidebar-title">Panic Button</div>
     </div>
     <ul class="sidebar-menu">
-      <li><a href="rekap.php">Rekap Data</a></li>
-      <li><a href="monitor.php">Monitor</a></li>
+      <li><a href="rekap.html">Rekap Data</a></li>
       <li><a href="user.html">User Registrations</a></li>
-      <li><a href="#">Button</a></li>
+      <li><a href="stats.html">Statistik</a></li>
+      <!-- <li><a href="#">Button</a></li> -->
     </ul>
   </nav>
 
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()" tabindex="-1" aria-hidden="true"></div>
 
+  <!-- Main Content -->
   <main class="main-content" id="mainContent">
-      <a href="rekap.html" class="card" aria-labelledby="rekapTitle" style="text-decoration: none;">
-          <section aria-hidden="true">
-          <h2 class="card-title" id="rekapTitle">Rekap Data</h2>
-          <div class="card-content">
-              <div class="card-value">...</div>
-          </div>
-          </section>
-      </a>
+    <a href="rekap.html" class="card" style="text-decoration: none;">
+      <section aria-hidden="true">
+        <h2 class="card-title">Rekap Data</h2>
+        <div class="card-content">
+          <div class="card-value"></div>
+        </div>
+      </section>
+    </a>
 
-      <a href="monitor.php" class="card" aria-labelledby="monitorTitle" style="text-decoration: none;">
-          <section aria-hidden="true">
-          <h2 class="card-title" id="monitorTitle">Monitor</h2>
-          <div class="card-content">
-              <div class="card-value">...</div>
-          </div>
-          </section>
-      </a>
+    <a href="user.html" class="card" style="text-decoration: none;">
+      <section aria-hidden="true">
+        <h2 class="card-title">User Registrations</h2>
+        <div class="card-content">
+          <div class="card-value"></div>
+        </div>
+      </section>
+    </a>
 
-      <a href="user.html" class="card" aria-labelledby="userRegTitle" style="text-decoration: none;">
-          <section aria-hidden="true">
-          <h2 class="card-title" id="userRegTitle">User Registrations</h2>
-          <div class="card-content">
-              <div class="card-value">...</div>
-          </div>
-          </section>
-      </a>
+    <a href="stats.html" class="card special-card" style="text-decoration: none;">
+      <section aria-hidden="true">
+        <h2 class="card-title">Detail Statistik</h2>
+        <div class="card-content">
+          <div class="card-value"><i class="fas fa-chart-line"></i> Lihat Grafik</div>
+        </div>
+      </section>
+    </a>
 
-      <a href="#" class="card" aria-labelledby="buttonTitle" style="text-decoration: none;">
-          <section aria-hidden="true">
-          <h2 class="card-title" id="buttonTitle">Status Button</h2>
-          <div class="card-content">
-              <div class="card-value" style="text-transform: uppercase;">...</div>
-          </div>
-          </section>
-      </a>
+    <a class="card-status" id="statusCard" style="text-decoration: none;">
+      <section>
+        <h2 class="card-title" style="font-size: 28px;">Status Button</h2>
+        <div class="card-content">
+          <div class="card-value" id="statusText">...</div>
+        </div>
+      </section>
+    </a>
 
-      <div id="liveAlert" class="live-box" style="grid-column: 1 / -1;">
-          <div class="live-empty">🚨 Peringatan Darurat Akan Tampil Disini</div>
-      </div>
-
+    <div id="liveAlert" class="live-box" style="grid-column: 1 / -1;">
+      <div class="live-empty">🚨 Peringatan Darurat Akan Tampil Disini</div>
+    </div>
   </main>
 
+  <!-- Sidebar Script -->
   <script>
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("sidebarOverlay");
@@ -358,7 +531,6 @@
       mainContent.classList.remove("sidebar-open");
     }
 
-    // Responsive behavior on window resize
     window.addEventListener("resize", () => {
       if (window.innerWidth > 800 && sidebar.classList.contains("open")) {
         mainContent.classList.add("sidebar-open");
@@ -368,110 +540,145 @@
     });
   </script>
 
+  <!-- Firebase Realtime Script -->
   <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-      import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+  
+  const firebaseConfig = {
+      apiKey: "--",
+      authDomain: "--",
+      databaseURL: "--",
+      projectId: "--",
+      storageBucket: "--",
+      messagingSenderId: "--",
+      appId: "--",
+      measurementId: "--"
+    };
 
-      const firebaseConfig = {
-          apiKey: "--",
-          authDomain: "--",
-          databaseURL: "--",
-          projectId: "--",
-          storageBucket: "--",
-          messagingSenderId: "--",
-          appId: "--",
-          measurementId: "--"
-          };
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-      const app = initializeApp(firebaseConfig);
-      const db = getDatabase(app);
+  const monitorRef = ref(db, 'monitor');
+  const usersRef = ref(db, 'users');
+  const buzzerRef = ref(db, 'buzzer');
+  const buzzerPriorityRef = ref(db, 'buzzer_priority');
 
-      const monitorRef = ref(db, 'monitor');
-      const usersRef = ref(db, 'users');
-      const buzzerRef = ref(db, 'buzzer');
-      const buzzerPriorityRef = ref(db, 'buzzer_priority');
+  const loadingOverlay = document.getElementById('loadingOverlay');
 
-      // Hitung jumlah data di "monitor"
-      onValue(monitorRef, snapshot => {
-          const data = snapshot.val();
-          const count = data ? Object.keys(data).length : 0;
-          document.querySelector('.card:nth-child(1) .card-value').textContent = count; // Rekap Data
-          document.querySelector('.card:nth-child(2) .card-value').textContent = count + '%'; // Monitor (misal persentase dummy)
-      });
+  // Counting data loaded events
+  let dataLoadedCount = 0;
+  const totalDataToLoad = 4; // jumlah onValue yang kita tunggu selesai
 
-      // Hitung jumlah user
-      onValue(usersRef, snapshot => {
-          const data = snapshot.val();
-          const count = data ? Object.keys(data).length : 0;
-          document.querySelector('.card:nth-child(3) .card-value').textContent = count; // User Registrations
-      });
+  function checkLoadingComplete() {
+    dataLoadedCount++;
+    if (dataLoadedCount >= totalDataToLoad) {
+      // Tambahkan delay kecil untuk efek smooth
+      setTimeout(() => {
+        loadingOverlay.style.opacity = '0';
+        setTimeout(() => {
+          loadingOverlay.style.display = 'none';
+        }, 400);
+      }, 300);
+    }
+  }
 
-      // Update status button card
-      onValue(buzzerPriorityRef, snapshot => {
-          const status = snapshot.val();
-          document.querySelector('.card:nth-child(4) .card-value').textContent = status ?? 'N/A'; // Button
-      });
+  onValue(monitorRef, snapshot => {
+    const data = snapshot.val();
+    const count = data ? Object.keys(data).length : 0;
+    document.querySelector('.card:nth-child(1) .card-value').textContent = count;
+    // document.querySelector('.card:nth-child(4) .card-value').textContent = count + '%';
+    checkLoadingComplete();
+  });
 
-      // --- LOGIKA BARU UNTUK KOTAK PERINGATAN ---
-      const liveAlertBox = document.getElementById("liveAlert");
+  onValue(usersRef, snapshot => {
+    const data = snapshot.val();
+    const count = data ? Object.keys(data).length : 0;
+    document.querySelector('.card:nth-child(2) .card-value').textContent = count;
+    checkLoadingComplete();
+  });
 
-      // Pantau status 'buzzer' sebagai pemicu utama
-      onValue(buzzerRef, (buzzerSnapshot) => {
-          const status = buzzerSnapshot.val();
+  onValue(buzzerPriorityRef, snapshot => {
+  const status = (snapshot.val() || 'N/A').toLowerCase();
+  const statusText = document.getElementById('statusText');
+  const statusCard = document.getElementById('statusCard');
 
-          if (status && status.toLowerCase() === 'on') {
-              // JIKA BUZZER "ON": Ambil data terbaru dari 'monitor' dan tampilkan
-              onValue(monitorRef, (monitorSnapshot) => {
-                  const data = monitorSnapshot.val();
-                  if (!data || Object.keys(data).length === 0) {
-                      liveAlertBox.innerHTML = `<div class="live-empty">Menunggu data peringatan...</div>`;
-                      liveAlertBox.style.borderLeftColor = "#999";
-                      return;
-                  }
+  statusText.textContent = status;
 
-                  const latestKey = Object.keys(data).sort().reverse()[0];
-                  const latest = data[latestKey];
+  // Reset class dulu
+  statusCard.className = 'card-status'; // reset ke class dasar dulu
 
-                  const houseNumber = latest.houseNumber || "Tidak Diketahui";
-                  const time = latest.time || "-";
-                  const lat = latest.latitude ?? "-";
-  const long = latest.longitude ?? "-";
-                  const priority = latest.priority || "biasa";
-                  const message = latest.message || "-"; // <-- BARIS BARU: Mengambil data pesan
+if (status === 'darurat') {
+  statusCard.classList.add('darurat');
+} else if (status === 'penting') {
+  statusCard.classList.add('penting');
+} else if (status === 'biasa') {
+  statusCard.classList.add('biasa');
+} else {
+  statusCard.style.backgroundColor = '#f4f4f4';
+  statusCard.style.color = '#444';
+}
 
-                  let borderColor = "green";
-                  let priorityClass = "priority-biasa";
-                  if (priority.toLowerCase() === "darurat") {
-                      borderColor = "red";
-                      priorityClass = "priority-darurat";
-                  } else if (priority.toLowerCase() === "penting") {
-                      borderColor = "orange";
-                      priorityClass = "priority-penting";
-                  }
-                  
-                  const mapsLink = (lat !== '-' && long !== '-')
-                      ? `<a href="https://www.google.com/maps?q=${lat},${long}" target="_blank">Buka Lokasi</a>`
-                      : `<span>Lokasi tidak tersedia</span>`;
-                  
-                  liveAlertBox.style.borderLeftColor = borderColor;
-                  // Ganti seluruh isi liveAlertBox dengan detail peringatan
-                  liveAlertBox.innerHTML = `
-                    <div class="live-box-content">
-                        <h2>Nomor Rumah: ${houseNumber}</h2>
-                        <p>Waktu: ${time}</p>
-                        <p>Lokasi: ${mapsLink}</p>
-                        <p>Prioritas: <span class="priority-box ${priorityClass}">${priority}</span></p>
-                        <p class="live-box-message"><strong>Pesan:</strong> ${message}</p> </div>
-                  `;
 
-              }, { once: true });
-          } else {
-              // JIKA BUZZER "OFF": Tampilkan pesan placeholder
-              liveAlertBox.innerHTML = `<div class="live-empty">🚨 Peringatan Darurat Akan Tampil Disini</div>`;
-              liveAlertBox.style.borderLeftColor = "#999"; // Reset warna border
-          }
-      });
-  </script>
+  checkLoadingComplete();
+});
 
+
+  onValue(buzzerRef, buzzerSnapshot => {
+    const status = buzzerSnapshot.val();
+
+    const liveAlertBox = document.getElementById("liveAlert");
+
+    if (status && status.toLowerCase() === 'on') {
+      onValue(monitorRef, monitorSnapshot => {
+        const data = monitorSnapshot.val();
+        if (!data || Object.keys(data).length === 0) {
+          liveAlertBox.innerHTML = `<div class="live-empty">Menunggu data peringatan...</div>`;
+          liveAlertBox.style.borderLeftColor = "#999";
+          return;
+        }
+
+        const latestKey = Object.keys(data).sort().reverse()[0];
+        const latest = data[latestKey];
+
+        const houseNumber = latest.houseNumber || "Tidak Diketahui";
+        const time = latest.time || "-";
+        const lat = latest.latitude ?? "-";
+        const long = latest.longitude ?? "-";
+        const priority = latest.priority || "biasa";
+        const message = latest.message || "-";
+
+        let borderColor = "green";
+        let priorityClass = "priority-biasa";
+        if (priority.toLowerCase() === "darurat") {
+          borderColor = "red";
+          priorityClass = "priority-darurat";
+        } else if (priority.toLowerCase() === "penting") {
+          borderColor = "orange";
+          priorityClass = "priority-penting";
+        }
+
+        const mapsLink = (lat !== '-' && long !== '-')
+          ? `<a href="https://www.google.com/maps?q=${lat},${long}" target="_blank" rel="noopener noreferrer">Buka Lokasi</a>`
+          : `<span>Lokasi tidak tersedia</span>`;
+
+        liveAlertBox.style.borderLeftColor = borderColor;
+        liveAlertBox.innerHTML = `
+          <div class="live-box-content">
+            <h2>Nomor Rumah: ${houseNumber}</h2>
+            <p>Waktu: ${time}</p>
+            <p>Lokasi: ${mapsLink}</p>
+            <p>Prioritas: <span class="priority-box ${priorityClass}">${priority}</span></p>
+            <p class="live-box-message"><strong>Pesan:</strong> ${message}</p>
+          </div>
+        `;
+      }, { once: true });
+    } else {
+      liveAlertBox.innerHTML = `<div class="live-empty">🚨 Peringatan Darurat Akan Tampil Disini</div>`;
+      liveAlertBox.style.borderLeftColor = "#999";
+    }
+    checkLoadingComplete();
+  });
+</script>
 </body>
 </html>
