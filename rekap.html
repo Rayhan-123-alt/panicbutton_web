@@ -3,21 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <title>Rekap Laporan Panic Button</title>
+  <link rel="icon" href="http://103.255.15.227/lifemedia_logo.png?v=1753515070" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "--",
-      authDomain: "--",
-      databaseURL: "--",
-      projectId: "--",
-      storageBucket: "--",
-      messagingSenderId: "--",
-      appId: "--",
-      measurementId: "--"
-    };
+        apiKey: "--",
+        authDomain: "--",
+        databaseURL: "--",
+        projectId: "--",
+        storageBucket: "--",
+        messagingSenderId: "--",
+        appId: "--",
+        measurementId: "--"
+      };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -145,10 +146,38 @@
     };
 
     window.exportToExcel = function () {
+      const search = document.getElementById("searchInput").value.toLowerCase();
+
+      // Filter data sesuai search dan filter prioritas/status
+      let filtered = allData.filter(item => {
+        const matchSearch =
+          item.name.toLowerCase().includes(search) ||
+          item.houseNumber.toLowerCase().includes(search) ||
+          item.message.toLowerCase().includes(search);
+        const matchPriority = filterPriority === "all" || item.priority.toLowerCase() === filterPriority;
+        const matchStatus = filterStatus === "all" || item.status.toLowerCase() === filterStatus;
+        return matchSearch && matchPriority && matchStatus;
+      });
+
+      // Sorting
+      if (sortColumn) {
+        filtered.sort((a, b) => {
+          let valA = a[sortColumn] || '';
+          let valB = b[sortColumn] || '';
+          if (sortColumn === 'time') {
+            valA = new Date(valA);
+            valB = new Date(valB);
+          }
+          return (valA > valB ? 1 : valA < valB ? -1 : 0) * sortDirection;
+        });
+      }
+
+      // Siapkan data untuk Excel
       const wsData = [
         ["Nama", "No. Rumah", "Pesan", "Prioritas", "Status", "Waktu", "Latitude", "Longitude"]
       ];
-      allData.forEach(m => {
+
+      filtered.forEach(m => {
         wsData.push([m.name, m.houseNumber, m.message, m.priority, m.status, m.time, m.latitude, m.longitude]);
       });
 
@@ -157,6 +186,7 @@
       XLSX.utils.book_append_sheet(wb, ws, "Laporan Panic Button");
       XLSX.writeFile(wb, "rekap_panic_button.xlsx");
     };
+
 
     window.toggleDropdown = function(id) {
       const dropdown = document.getElementById(id);

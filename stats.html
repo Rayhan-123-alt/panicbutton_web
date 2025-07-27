@@ -4,175 +4,241 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Statistik Panic Button</title>
-  
+  <link rel="icon" href="http://103.255.15.227/lifemedia_logo.png?v=1753515070" type="image/png">
+
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-  :root {
-    --primary: #006400;
-    --success: #4CAF50;
-    --warning: #FFC107;
-    --danger: #e53935;
-    --info: #2196f3;
-    --bg: #f4f4f4;
-    --text: #333;
-    --white: #fff;
-  }
 
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    margin: 0;
-    padding: 20px 10px;
-  }
+    /* === Modal Stylish === */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
 
-  h1 {
-    text-align: center;
-    color: var(--primary);
-    font-size: 1.8rem;
-    margin-bottom: 30px;
-  }
+.modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 90%;
+  width: 400px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  animation: fadeInUp 0.3s ease;
+  position: relative;
+}
 
-  h2 {
-    font-size: 1.1rem;
-    text-align: center;
-    margin-bottom: 12px;
-    color: #444;
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
   }
-
-  .back-button {
-    display: block;
-    text-align: center;
-    background-color: var(--primary);
-    color: var(--white);
-    text-decoration: none;
-    font-weight: bold;
-    padding: 10px 20px;
-    margin: 10px auto 25px;
-    border-radius: 8px;
-    width: fit-content;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: background 0.3s;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
+}
 
-  .back-button:hover {
-    background-color: #004d00;
-  }
+.modal h2 {
+  margin-top: 0;
+  font-size: 1.4rem;
+  color: var(--accent);
+}
 
-  .chart-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 25px;
-    max-width: 1200px;
-    margin: auto;
-  }
+.modal p {
+  margin-bottom: 1em;
+  color: var(--dark);
+}
 
-  .chart-container {
-    background: var(--white);
-    padding: 20px 15px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.07);
-    transition: transform 0.3s ease;
-  }
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #999;
+  transition: color 0.2s ease;
+}
 
-  .chart-container:hover {
-    transform: translateY(-4px);
-  }
+.modal-close:hover {
+  color: var(--danger);
+}
 
-  .chart-users {
-    margin-top: 30px;
-  }
-
-  canvas {
-    width: 100% !important;
-    height: auto !important;
-  }
-
-  @media (min-width: 768px) {
-    .chart-grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 35px;
+    :root {
+      --primary: #4CAF50;
+      --danger: #F44336;
+      --warning: #FFC107;
+      --info: #2196F3;
+      --gray: #f4f6f8;
+      --dark: #333;
+      --accent: #673AB7;
+      --white: #fff;
     }
 
-    .chart-users {
-      margin-top: 45px;
-      max-width: 900px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-  }
-
-  /* Loading Overlay */
-  #loadingOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    font-family: 'Segoe UI', sans-serif;
-    color: var(--primary);
-    font-size: 18px;
-  }
-
-  .spinner {
-    border: 6px solid #f3f3f3;
-    border-top: 6px solid var(--primary);
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    animation: spin 1s linear infinite;
-    margin-bottom: 16px;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  /* Dark mode */
-  @media (prefers-color-scheme: light) {
     body {
-      background: #121212;
-      color: #eee;
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--gray);
+      color: var(--dark);
+      margin: 0;
+      padding: 20px 10px;
     }
 
-    .chart-container {
-      background: #1e1e1e;
-      color: #eee;
+    h1 {
+      text-align: center;
+      color: var(--primary);
+      font-size: 2rem;
+      margin-bottom: 30px;
     }
 
     .back-button {
-      background-color: #90ee90;
-      color: #121212;
+      display: block;
+      text-align: center;
+      background: linear-gradient(135deg, #40dce4, #1079d4);
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 12px 28px;
+      margin: 0 auto 30px;
+      border-radius: 50px;
+      width: fit-content;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transition: all 0.35s ease;
+      position: relative;
+      overflow: hidden;
     }
 
     .back-button:hover {
-      background-color: #6dc76d;
+      background: linear-gradient(135deg, #12fff7, #36f1cd);
+      color: #000;
+      transform: translateY(-2px) scale(1.04);
+      box-shadow: 0 6px 16px rgba(0, 255, 229, 0.6);
     }
 
+    .chart-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 25px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .chart-container {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chart-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(103, 58, 183, 0.05), rgba(0, 255, 229, 0.07));
+      transition: width 0.3s ease;
+      z-index: 0;
+    }
+
+    .chart-container:hover::before {
+      width: 100%;
+    }
+
+    .chart-container:hover {
+      transform: translateY(-6px) scale(1.01);
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
+      /* cursor: pointer; */
+    }
+
+    .chart-container * {
+      position: relative;
+      z-index: 1;
+    }
+
+
+    .chart-title {
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--accent);
+      position: relative;
+    }
+
+    .chart-title::after {
+      content: '';
+      display: block;
+      width: 50px;
+      height: 3px;
+      background: var(--accent);
+      margin: 8px auto 0;
+      border-radius: 2px;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+      cursor: pointer;
+    }
+
+    .chart-users {
+      margin-top: 40px;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    @media (min-width: 768px) {
+      .chart-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 35px;
+      }
+    }
+
+    /* Loading Overlay */
     #loadingOverlay {
-      background: #121212;
-      color: #90ee90;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: white;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-size: 18px;
     }
 
     .spinner {
-      border-top: 6px solid #90ee90;
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid var(--accent);
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
     }
-  }
-</style>
 
-
+    @keyframes spin {
+      0% { transform: rotate(0); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
-    
+
 <a href="/" class="back-button">← Kembali ke Dashboard</a>
 
 <div id="loadingOverlay">
@@ -180,46 +246,43 @@
   <div>Sedang mengambil data...</div>
 </div>
 
-<h1>Statistik Panic Button</h1>
+<h1>Statistik <span style="color: rgba(253, 66, 66, 0.894);">Panic Button</span></h1>
 
 <div class="chart-grid">
-  <!-- Grafik 1: Prioritas -->
   <div class="chart-container">
-    <h2>Prioritas Peringatan</h2>
+    <div class="chart-title">Prioritas Peringatan</div>
     <canvas id="barChart"></canvas>
   </div>
 
-  <!-- Grafik 2: Status -->
-  <div class="chart-container">
-    <h2>Status Peringatan (Selesai vs Proses)</h2>
+  <div class="chart-container" style="position: relative;">
+    <div class="chart-title">Status Peringatan</div>
+    <button id="lihatPerbandinganBtn" style="position: absolute; top: 20px; right: 30px; background: var(--info); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer;">
+      Lihat Perbandingan
+    </button>
     <canvas id="pieChart"></canvas>
   </div>
-</div>
 
-<!-- Grafik 3: Ranking -->
 <div class="chart-container chart-users">
-  <h2>Ranking Jumlah Tekan Tombol per Pengguna</h2>
+  <div class="chart-title">Ranking Jumlah Tekan Tombol per Pengguna</div>
   <canvas id="rankingChart"></canvas>
 </div>
 
-
-
-
-<!-- Firebase JS -->
+<!-- Firebase & Chart Rendering -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
   import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+  import { get } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
 
   const firebaseConfig = {
-      apiKey: "--",
-      authDomain: "--",
-      databaseURL: "--",
-      projectId: "--",
-      storageBucket: "--",
-      messagingSenderId: "--",
-      appId: "--",
-      measurementId: "--"
-    };
+        apiKey: "--",
+        authDomain: "--",
+        databaseURL: "--",
+        projectId: "--",
+        storageBucket: "--",
+        messagingSenderId: "--",
+        appId: "--",
+        measurementId: "--"
+      };
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
@@ -241,46 +304,116 @@
   function updateCharts(data) {
     // Bar Chart
     const barData = {
-    labels: ['Darurat', 'Penting', 'Biasa'],
-    datasets: [{
+      labels: ['Darurat', 'Penting', 'Biasa'],
+      datasets: [{
         label: 'Jumlah Peringatan',
         data: [data.darurat, data.penting, data.biasa],
-        backgroundColor: ['#e53935', '#ffb300', '#43a047'],
-    }]
+        backgroundColor: ['#F44336', '#FFC107', '#4CAF50'],
+        borderRadius: 5
+      }]
     };
-
     if (barChart) barChart.destroy();
-
     barChart = new Chart(document.getElementById('barChart'), {
-    type: 'bar',
-    data: barData,
-    options: {
+      type: 'bar',
+      data: barData,
+      options: {
         responsive: true,
         aspectRatio: window.innerWidth < 600 ? 1.2 : 2,
+        plugins: { legend: { display: false } },
         scales: { y: { beginAtZero: true } },
-        plugins: {
-        legend: {
-            display: false  // ini yang menghilangkan legend
+        onClick: async (evt, elements) => {
+          if (elements.length > 0) {
+            const index = elements[0].index;
+            const selectedPriority = barData.labels[index].toLowerCase(); // 'darurat', 'penting', atau 'biasa'
+
+            const snapshot = await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js")
+              .then(module => onValue(ref(db, 'monitor'), () => {})); // dummy to import if needed
+
+            const monitorSnap = await get(ref(db, 'monitor'));
+            const raw = monitorSnap.val();
+
+            const filtered = {};
+            if (raw) {
+              Object.values(raw).forEach(item => {
+                const prio = (item.priority || "").toLowerCase();
+                const name = item.name || "Unknown";
+
+                if (prio === selectedPriority) {
+                  if (!filtered[name]) filtered[name] = 0;
+                  filtered[name]++;
+                }
+              });
+            }
+
+            let color = 'green'; // default hijau untuk 'biasa'
+            if (selectedPriority === 'darurat') color = 'red';
+            else if (selectedPriority === 'penting') color = '#DBB611';
+
+            const sortedEntries = Object.entries(filtered).sort((a, b) => b[1] - a[1]);
+            let html = `<p style="text-transform: capitalize;">
+              <strong>
+                Seberapa sering orang-orang ini menekan panic button dengan prioritas 
+                ${selectedPriority}
+              </strong>
+            </p>`;
+
+            html += `<table style="width: 100%; border-collapse: collapse; text-align: left;">
+              <thead>
+                <tr style="background: #eee;">
+                  <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">Nama</th>
+                  <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">Jumlah</th>
+                </tr>
+              </thead>
+              <tbody>`;
+
+            for (const [name, count] of sortedEntries) {
+              html += `<tr>
+                <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">${name}</td>
+                <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">${count}</td>
+              </tr>`;
+            }
+
+            html += `</tbody></table>`;
+
+            const priorityColors = {
+              darurat: '#F44336',  // merah
+              penting: '#DCB713',  // kuning
+              biasa: 'green'     // hijau
+            };
+
+            const formattedTitle = `
+              <span style="
+                background-color: ${priorityColors[selectedPriority]};
+                color: white;
+                padding: 4px 12px;
+                border-radius: 12px;
+                font-weight: 600;
+                font-size: 1.1rem;
+                display: inline-block;
+              ">
+                ${selectedPriority.charAt(0).toUpperCase() + selectedPriority.slice(1)}
+              </span>
+            `;
+
+            openModal(`Prioritas: ${formattedTitle}`, html);
+
+          }
         }
-        }
-    }
+
+      }
     });
 
-
     // Pie Chart
-    const totalStatus = data.statusSelesai + data.statusProses || 1;
-    const selesaiPercent = ((data.statusSelesai / totalStatus) * 100).toFixed(1);
-    const prosesPercent = ((data.statusProses / totalStatus) * 100).toFixed(1);
+    const total = data.statusSelesai + data.statusProses || 1;
+    const selesaiPercent = ((data.statusSelesai / total) * 100).toFixed(1);
+    const prosesPercent = ((data.statusProses / total) * 100).toFixed(1);
 
     const pieData = {
-      labels: [
-        `Selesai ${selesaiPercent}%`,
-        `Proses ${prosesPercent}%`
-      ],
+      labels: [`Proses ${prosesPercent}%`, `Selesai ${selesaiPercent}%`],
       datasets: [{
-        data: [data.statusSelesai, data.statusProses],
-        backgroundColor: ['#4CAF50', '#FFC107'],
-        hoverOffset: 30
+        data: [data.statusProses, data.statusSelesai],
+        backgroundColor: ['#FA1AE7', '#1AE7FA'],
+        hoverOffset: 20
       }]
     };
     if (pieChart) pieChart.destroy();
@@ -289,88 +422,294 @@
       data: pieData,
       options: {
         responsive: true,
-        aspectRatio: window.innerWidth < 600 ? 1 : 1.5
-        }
+        aspectRatio: window.innerWidth < 600 ? 1 : 1.6,
+        onClick: async (evt, elements) => {
+  if (elements.length > 0) {
+    const index = elements[0].index;
+    const selectedStatus = pieData.labels[index].toLowerCase().includes('selesai') ? 'selesai' : 'proses';
 
+    const snapshot = await get(ref(db, 'monitor'));
+    const raw = snapshot.val();
+
+    const filtered = {};
+    if (raw) {
+      Object.values(raw).forEach(item => {
+        const status = (item.status || "").toLowerCase();
+        const name = item.name || "Unknown";
+
+        if (status === selectedStatus) {
+          if (!filtered[name]) filtered[name] = 0;
+          filtered[name]++;
+        }
+      });
+    }
+
+    let sub = `Berikut Orang-orang dengan Status Laporan : <strong>Selesai</strong>`;
+    if (selectedStatus === 'proses') {
+      sub = `Berikut Orang-orang dengan Status Laporan : <strong>Proses</strong>`;
+    }
+
+    const sortedEntries = Object.entries(filtered).sort((a, b) => b[1] - a[1]);
+    let html = `<p>${sub}</p>`;
+    html += `<table style="width: 100%; border-collapse: collapse; text-align: left;">
+      <thead>
+        <tr style="background: #eee;">
+          <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">Nama</th>
+          <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">Jumlah</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    for (const [name, count] of sortedEntries) {
+      html += `<tr>
+        <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">${name}</td>
+        <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">${count}</td>
+      </tr>`;
+    }
+
+    html += `</tbody></table>`;
+
+    const statusColors = {
+      selesai: '#1078BD',
+      proses: '#FA1AE7'
+    };
+
+    const modalTitle = `
+      <span style="
+        background-color: ${statusColors[selectedStatus.toLowerCase()] || '#888'};
+        color: white;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        display: inline-block;
+      ">
+        ${selectedStatus.charAt(0).toUpperCase() + selectedStatus.slice(1)}
+      </span>
+    `;
+
+    openModal(`Status: ${modalTitle}`, html);
+
+  }
+}
+
+      }
     });
 
-    // Horizontal Bar Chart - Ranking Pengguna
-const ranking = Object.entries(data.usersData).map(([name, userData]) => ({
-  name,
-  total: userData.timestamps.length
-}));
+    document.getElementById('lihatPerbandinganBtn').addEventListener('click', async () => {
+  const snapshot = await get(ref(db, 'monitor'));
+  const raw = snapshot.val();
 
-// Urutkan dari yang terbanyak
-ranking.sort((a, b) => b.total - a.total);
+  const userStats = {}; // {ROYYY: {selesai: 5, proses: 2}}
 
-const rankingLabels = ranking.map(item => item.name);
-const rankingCounts = ranking.map(item => item.total);
+  if (raw) {
+    Object.values(raw).forEach(item => {
+      const name = item.name || "Unknown";
+      const status = (item.status || "").toLowerCase();
 
-const rankingData = {
-  labels: rankingLabels,
-  datasets: [{
-    label: 'Jumlah Tekan Tombol',
-    data: rankingCounts,
-    backgroundColor: '#2196f3'
-  }]
-};
+      if (!userStats[name]) userStats[name] = { selesai: 0, proses: 0 };
 
-if (lineChart) lineChart.destroy();
-lineChart = new Chart(document.getElementById('rankingChart'), {
-  type: 'bar',
-  data: rankingData,
-  options: {
-    indexAxis: 'y',
-    responsive: true,
-    aspectRatio: window.innerWidth < 600 ? 1.5 : 2,
-    scales: {
-      x: {
-        beginAtZero: true,
-        title: { display: true, text: 'Jumlah Tekan Tombol' },
-        ticks: { precision: 0 }
-      },
-      y: {
-        title: { display: true, text: 'Nama Pengguna' }
-      }
-    },
-    plugins: {
-      legend: { display: false },
-      tooltip: { mode: 'index', intersect: false }
-    }
+      if (status === "selesai") userStats[name].selesai++;
+      else if (status === "proses") userStats[name].proses++;
+    });
   }
+
+  const sortedEntries = Object.entries(userStats).sort((a, b) => {
+    const totalA = a[1].selesai + a[1].proses;
+    const totalB = b[1].selesai + b[1].proses;
+    return totalB - totalA; // urut descending berdasarkan total jumlah (selesai + proses)
+  });
+    
+  let html = `
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead>
+          <tr style="background: #eee;">
+            <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">No</th>
+            <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">Nama</th>
+            <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">Status Selesai</th>
+            <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">Status Proses</th>
+            <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">Persentase Terselamatkan</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+    let i = 1;
+    for (const [name, stat] of sortedEntries) {
+      const total = stat.selesai + stat.proses;
+      const percentage = total > 0 ? ((stat.selesai / total) * 100).toFixed(1) : "0.0";
+      html += `<tr>
+        <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">${i++}</td>
+        <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">${name}</td>
+        <td style="padding: 8px; border: 1px solid #ccc; text-align: center; background-color: #d4f7dc;">${stat.selesai}</td>
+        <td style="padding: 8px; border: 1px solid #ccc; text-align: center; background-color: #f7d4d4;">${stat.proses}</td>
+        <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">${percentage}%</td>
+      </tr>`;
+    }
+
+    html += `</tbody></table>`;
+  openModal("Perbandingan Status Peringatan", html);
 });
+
+
+    // Horizontal Bar Chart
+    const ranking = Object.entries(data.usersData).map(([name, userData]) => ({
+      name, total: userData.timestamps.length
+    })).sort((a, b) => b.total - a.total);
+
+    const labels = ranking.map(item => item.name);
+    const totals = ranking.map(item => item.total);
+
+    const rankingData = {
+      labels,
+      datasets: [{
+        label: 'Jumlah Tekan Tombol',
+        data: totals,
+        backgroundColor: '#673AB7',
+        borderRadius: 5
+      }]
+    };
+    if (lineChart) lineChart.destroy();
+    lineChart = new Chart(document.getElementById('rankingChart'), {
+      type: 'bar',
+      data: rankingData,
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        aspectRatio: window.innerWidth < 600 ? 1.5 : 2.2,
+        plugins: { legend: { display: false } },
+        onClick: async (evt, elements) => {
+          if (elements.length > 0) {
+            const index = elements[0].index;
+            const userName = labels[index];
+
+            // Ambil snapshot sekali dari Firebase
+            const monitorSnap = await get(ref(db, 'monitor'));
+            const raw = monitorSnap.val();
+
+            // Hitung prioritas untuk userName
+            const counts = { darurat: 0, penting: 0, biasa: 0 };
+
+            if (raw) {
+              Object.values(raw).forEach(item => {
+                if ((item.name || '').toLowerCase() === userName.toLowerCase()) {
+                  const prio = (item.priority || '').toLowerCase();
+                  if (prio === 'darurat') counts.darurat++;
+                  else if (prio === 'penting') counts.penting++;
+                  else counts.biasa++;
+                }
+              });
+            }
+
+            // Buat tabel HTML
+            const rowStyle = (color) => `style="background-color: ${color}; padding: 8px; border: 1px solid #ccc;"`;
+
+            const html = `
+              <table style="border-collapse: collapse; width: 100%; text-align: left;">
+                <thead>
+                  <tr>
+                    <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">Status</th>
+                    <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">Jumlah</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr ${rowStyle('rgba(244, 67, 54, 0.15)')}>
+                    <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">Darurat</td>
+                    <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">${counts.darurat}</td>
+                  </tr>
+                  <tr ${rowStyle('rgba(255, 193, 7, 0.15)')}>
+                    <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">Penting</td>
+                    <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">${counts.penting}</td>
+                  </tr>
+                  <tr ${rowStyle('rgba(76, 175, 80, 0.15)')}>
+                    <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">Biasa</td>
+                    <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">${counts.biasa}</td>
+                  </tr>
+                </tbody>
+              </table>
+            `;
+
+            openModal(`Detail Pengguna: ${userName} - ${counts.darurat + counts.penting + counts.biasa}`, html);
+          }
+        },
+
+        scales: {
+          x: {
+            beginAtZero: true,
+            title: { display: true, text: 'Jumlah Tekan Tombol' },
+            ticks: { precision: 0 }
+          },
+          y: {
+            title: { display: true, text: 'Nama Pengguna' }
+          }
+        }
+      }
+    });
   }
 
   onValue(monitorRef, (snapshot) => {
     const raw = snapshot.val();
-    if (!raw) return updateCharts(createInitialData());
-
     const data = createInitialData();
 
-    Object.values(raw).forEach(item => {
-      if (!item) return;
+    if (raw) {
+      Object.values(raw).forEach(item => {
+        if (!item) return;
+        const prio = (item.priority || "").toLowerCase();
+        if (prio === "darurat") data.darurat++;
+        else if (prio === "penting") data.penting++;
+        else data.biasa++;
 
-      const prio = (item.priority || "").toLowerCase();
-      if (prio === "darurat") data.darurat++;
-      else if (prio === "penting") data.penting++;
-      else data.biasa++;
+        const status = (item.status || "").toLowerCase();
+        if (status === "selesai") data.statusSelesai++;
+        else data.statusProses++;
 
-      const status = (item.status || "").toLowerCase();
-      if (status === "selesai") data.statusSelesai++;
-      else data.statusProses++;
-
-      const name = item.name || "Unknown";
-      const timeStr = item.time || "";
-      const date = timeStr.split(" ")[0] || "???";
-
-      if (!data.usersData[name]) data.usersData[name] = { timestamps: [] };
-      data.usersData[name].timestamps.push({ date });
-    });
+        const name = item.name || "Unknown";
+        if (!data.usersData[name]) data.usersData[name] = { timestamps: [] };
+        data.usersData[name].timestamps.push({ date: item.time?.split(" ")[0] || "???" });
+      });
+    }
 
     updateCharts(data);
     document.getElementById('loadingOverlay').style.display = 'none';
   });
+
 </script>
+
+<script>
+  function closeModal() {
+    document.getElementById('customModal').style.display = 'none';
+  }
+
+  function openModal(title, content) {
+    document.getElementById('modalTitle').innerHTML = title;
+    document.getElementById('modalContent').innerHTML = content;
+    document.getElementById('customModal').style.display = 'flex';
+  }
+
+  // Tutup modal jika klik di luar kotak modal
+  window.addEventListener('click', function (e) {
+    const modal = document.getElementById('customModal');
+    const modalBox = modal.querySelector('.modal');
+    if (e.target === modal && !modalBox.contains(e.target)) {
+      closeModal();
+    }
+  });
+
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      closeModal();
+    }
+  });
+</script>
+
+
+<div class="modal-overlay" id="customModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <h2 id="modalTitle">Judul</h2>
+    <p id="modalContent">Isi konten akan dimuat di sini...</p>
+  </div>
+</div>
+
 
 </body>
 </html>

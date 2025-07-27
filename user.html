@@ -4,20 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Daftar Pengguna</title>
+  <link rel="icon" href="http://103.255.15.227/lifemedia_logo.png?v=1753515070" type="image/png">
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "--",
-      authDomain: "--",
-      databaseURL: "--",
-      projectId: "--",
-      storageBucket: "--",
-      messagingSenderId: "--",
-      appId: "--",
-      measurementId: "--"
-    };
+        apiKey: "--",
+        authDomain: "--",
+        databaseURL: "--",
+        projectId: "--",
+        storageBucket: "--",
+        messagingSenderId: "--",
+        appId: "--",
+        measurementId: "--"
+      };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -128,7 +129,7 @@
 
     .spinner {
       border: 6px solid #f3f3f3;
-      border-top: 6px solid #3498db;
+      border-top: 6px solid red;
       border-radius: 50%;
       width: 50px;
       height: 50px;
