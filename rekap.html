@@ -2,564 +2,666 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Rekap Laporan Panic Button</title>
-  <link rel="icon" href="http://103.255.15.227/lifemedia_logo.png?v=1753515070" type="image/png">
+  <title>Daftar Perumahan</title>
+  <link rel="icon" href="http://103.255.15.227/lifemedia_logo.png?v=1753515070" type="image/png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
-
-    const firebaseConfig = {
-        apiKey: "--",
-        authDomain: "--",
-        databaseURL: "--",
-        projectId: "--",
-        storageBucket: "--",
-        messagingSenderId: "--",
-        appId: "--",
-        measurementId: "--"
-      };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const monitorRef = ref(db, 'monitor');
-
-    let allData = [];
-    let currentPage = 1;
-    const rowsPerPage = 10;
-    let sortColumn = 'time';
-    let sortDirection = -1;
-
-    let filterPriority = "all";
-    let filterStatus = "all";
-
-    const loadingOverlay = document.getElementById('loadingOverlay');
-
-    onValue(monitorRef, (snapshot) => {
-      const data = snapshot.val();
-      allData = [];
-
-      for (const id in data) {
-        allData.push(data[id]);
-      }
-      allData.reverse();
-
-      currentPage = 1;
-      renderTable();
-
-      // Sembunyikan loading setelah data siap
-      loadingOverlay.style.display = 'none';
-    });
-
-
-    window.renderTable = function () {
-      const tbody = document.getElementById("monitorTableBody");
-      const search = document.getElementById("searchInput").value.toLowerCase();
-
-      let filtered = allData.filter(item => {
-        const matchSearch =
-          item.name.toLowerCase().includes(search) ||
-          item.houseNumber.toLowerCase().includes(search) ||
-          item.message.toLowerCase().includes(search);
-        const matchPriority = filterPriority === "all" || item.priority.toLowerCase() === filterPriority;
-        const matchStatus = filterStatus === "all" || item.status.toLowerCase() === filterStatus;
-        return matchSearch && matchPriority && matchStatus;
-      });
-
-      if (sortColumn) {
-        filtered.sort((a, b) => {
-          let valA = a[sortColumn] || '';
-          let valB = b[sortColumn] || '';
-          if (sortColumn === 'time') {
-            valA = new Date(valA);
-            valB = new Date(valB);
-          }
-          return (valA > valB ? 1 : valA < valB ? -1 : 0) * sortDirection;
-        });
-      }
-
-      const start = (currentPage - 1) * rowsPerPage;
-      const paginated = filtered.slice(start, start + rowsPerPage);
-
-      tbody.innerHTML = paginated.map(m => `
-        <tr>
-          <td data-label="Nama">${m.name}</td>
-          <td data-label="No. Rumah">${m.houseNumber}</td>
-          <td data-label="Pesan">${m.message}</td>
-          <td data-label="Prioritas"><span class="tag ${m.priority.toLowerCase()}">${m.priority}</span></td>
-          <td data-label="Status">${m.status}</td>
-          <td data-label="Waktu">${m.time}</td>
-          <td data-label="Lokasi">
-            <a href="https://www.google.com/maps?q=${m.latitude},${m.longitude}" target="_blank">
-              📍 Buka Di Sini
-            </a>
-          </td>
-
-        </tr>
-      `).join("");
-
-      if (paginated.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7">Tidak ada data ditemukan.</td></tr>`;
-      }
-
-      renderPagination(filtered.length);
-      closeAllDropdowns();
-    };
-
-    window.renderPagination = function (total) {
-      const pageCount = Math.ceil(total / rowsPerPage);
-      const pagination = document.getElementById("pagination");
-      pagination.innerHTML = "";
-
-      for (let i = 1; i <= pageCount; i++) {
-        pagination.innerHTML += `<button onclick="changePage(${i})" ${i === currentPage ? 'disabled' : ''}>${i}</button>`;
-      }
-    };
-
-    window.changePage = function (page) {
-      currentPage = page;
-      renderTable();
-    };
-
-    window.sortBy = function (col) {
-      if (sortColumn === col) {
-        sortDirection *= -1;
-      } else {
-        sortColumn = col;
-        sortDirection = -1;
-      }
-      renderTable();
-    };
-
-    window.setFilterPriority = function (val) {
-      filterPriority = val;
-      currentPage = 1;
-      renderTable();
-      closeAllDropdowns();
-    };
-
-    window.setFilterStatus = function (val) {
-      filterStatus = val;
-      currentPage = 1;
-      renderTable();
-      closeAllDropdowns();
-    };
-
-    window.exportToExcel = function () {
-      const search = document.getElementById("searchInput").value.toLowerCase();
-
-      // Filter data sesuai search dan filter prioritas/status
-      let filtered = allData.filter(item => {
-        const matchSearch =
-          item.name.toLowerCase().includes(search) ||
-          item.houseNumber.toLowerCase().includes(search) ||
-          item.message.toLowerCase().includes(search);
-        const matchPriority = filterPriority === "all" || item.priority.toLowerCase() === filterPriority;
-        const matchStatus = filterStatus === "all" || item.status.toLowerCase() === filterStatus;
-        return matchSearch && matchPriority && matchStatus;
-      });
-
-      // Sorting
-      if (sortColumn) {
-        filtered.sort((a, b) => {
-          let valA = a[sortColumn] || '';
-          let valB = b[sortColumn] || '';
-          if (sortColumn === 'time') {
-            valA = new Date(valA);
-            valB = new Date(valB);
-          }
-          return (valA > valB ? 1 : valA < valB ? -1 : 0) * sortDirection;
-        });
-      }
-
-      // Siapkan data untuk Excel
-      const wsData = [
-        ["Nama", "No. Rumah", "Pesan", "Prioritas", "Status", "Waktu", "Latitude", "Longitude"]
-      ];
-
-      filtered.forEach(m => {
-        wsData.push([m.name, m.houseNumber, m.message, m.priority, m.status, m.time, m.latitude, m.longitude]);
-      });
-
-      const ws = XLSX.utils.aoa_to_sheet(wsData);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Laporan Panic Button");
-      XLSX.writeFile(wb, "rekap_panic_button.xlsx");
-    };
-
-
-    window.toggleDropdown = function(id) {
-      const dropdown = document.getElementById(id);
-      const isVisible = dropdown.style.display === "block";
-
-      closeAllDropdowns();
-
-      dropdown.style.display = isVisible ? "none" : "block";
-    };
-
-    function closeAllDropdowns() {
-      document.querySelectorAll(".dropdown").forEach(d => {
-        d.style.display = "none";
-      });
-    }
-
-    window.onclick = function(event) {
-      if (!event.target.matches('.filter-button')) {
-        closeAllDropdowns();
-      }
-    };
-  </script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    /* Spinner Loading */
-    #loadingOverlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: white;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      font-family: 'Segoe UI', sans-serif;
-      color: #00796b;
-      font-size: 18px;
-    }
-
-    .spinner {
-      border: 6px solid #f3f3f3;
-      border-top: 6px solid #00796b;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      animation: spin 1s linear infinite;
-      margin-bottom: 16px;
-    }
-
-    table a {
-  color: #00796b; /* Warna dasar hijau */
-  font-weight: 500;
-  text-decoration: none;
-  position: relative;
-  transition: color 0.3s ease;
-}
-
-table a::after {
-  content: "";
-  position: absolute;
-  width: 0;
-  height: 2px;
-  left: 0;
-  bottom: -2px;
-  background-color: #00796b;
-  transition: width 0.3s ease;
-}
-
-table a:hover {
-  color: #004d40; /* Warna lebih gelap saat hover */
-}
-
-table a:hover::after {
-  width: 100%;
-}
-
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* ... (style unchanged except adding cursor pointer to dropdown items) ... */
+    /* Reset & Global Styles */
     * {
+      margin: 0;
+      padding: 0;
       box-sizing: border-box;
     }
-    .dropdown div {
-      padding: 8px 12px;
-      cursor: pointer;
-      user-select: none;
-      color: #333; /* Abu-abu gelap, lebih soft dari hitam pekat */
-    }
-
     body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #f5f8ff;
+      color: #333;
       padding: 20px;
-      background: #f8f9fa;
+      line-height: 1.6;
+      min-height: 100vh;
+      position: relative;
+    }
+    /* Tombol Kembali di Pojok Kiri Atas */
+    .back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background-color: #1a3c6e;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background-color 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .back-button:hover {
+      background-color: #142f59;
+      text-decoration: none;
+    }
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+      margin-top: 40px; /* Memberi ruang untuk tombol kembali */
     }
     h1 {
-      color: #333;
-      margin-bottom: 16px;
+      font-size: 28px;
+      font-weight: 600;
+      color: #1a3c6e;
+      margin-bottom: 8px;
     }
-    .back-button {
-      display: inline-block;
-      margin-bottom: 16px;
-      padding: 8px 14px;
-      background-color: #00796b;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 5px;
+    .summary {
+      font-size: 16px;
+      color: #555;
     }
-    #tools {
+    /* Search & Add Section */
+    .controls {
       display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
       flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 16px;
     }
-    input, button {
-      padding: 10px 14px;
+    .search-container {
+      flex: 1;
+      min-width: 250px;
+    }
+    .search-input {
+      width: 100%;
+      padding: 12px 16px;
       border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 14px;
+      border-radius: 8px;
+      font-size: 15px;
+      background-color: white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
     }
-    button {
-      background-color: #00796b;
+    .search-input:focus {
+      outline: none;
+      border-color: #4285f4;
+      box-shadow: 0 1px 6px rgba(66, 133, 244, 0.3);
+    }
+    .btn-add {
+      padding: 12px 20px;
+      background-color: #34a853;
       color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
       cursor: pointer;
-      transition: 0.3s;
+      transition: background 0.2s;
+      font-size: 15px;
+      white-space: nowrap;
     }
-    button:hover:not(:disabled) {
-      background-color: #005f56;
+    .btn-add:hover {
+      background-color: #2d9146;
     }
-    button:disabled {
-      background-color: #ccc;
-      cursor: not-allowed;
-    }
+    /* Table Styling */
     table {
       width: 100%;
       border-collapse: collapse;
       background: white;
-      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border-radius: 10px;
       overflow: hidden;
+      margin-bottom: 20px;
     }
-    th, td {
-      padding: 12px 16px;
-      text-align: center;
-      vertical-align: middle;
-      border-bottom: 1px solid #eee;
-        }
     th {
-      background-color: #00796b;
+      background-color: #1a3c6e;
       color: white;
-      cursor: pointer;
-    }
-    .tag {
-      padding: 4px 10px;
-      border-radius: 4px;
-      font-weight: bold;
-      text-transform: capitalize;
-      display: inline-block;
-    }
-    .darurat {
-      background-color: #e53935;
-      color: white;
-    }
-    .penting {
-      background-color: #fdd835;
-      color: black;
-    }
-    .biasa {
-      background-color: #43a047;
-      color: white;
-    }
-    #pagination {
-      margin-top: 16px;
+      padding: 14px 12px;
+      font-weight: 600;
       text-align: center;
+      font-size: 15px;
     }
-    #pagination button {
-      margin: 2px;
-      padding: 6px 12px;
-      font-size: 14px;
+    td {
+      padding: 14px 12px;
+      text-align: center;
+      border-bottom: 1px solid #eee;
     }
-    .dropdown-container {
-      position: relative;
+    tbody tr:hover {
+      background-color: #f8faff;
+      transition: background 0.2s;
+    }
+    /* Action Buttons */
+    .btn {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      margin: 0 4px;
+    }
+    .btn-edit {
+      background-color: #fbbc05;
+      color: #333;
+    }
+    .btn-edit:hover {
+      background-color: #e6a804;
+    }
+    .btn-delete {
+      background-color: #ea4335;
+      color: white;
+    }
+    .btn-delete:hover {
+      background-color: #d33b2d;
+    }
+    .btn-detail {
+      background-color: #4285f4;
+      color: white;
+      text-decoration: none;
       display: inline-block;
     }
-    .dropdown {
-      display: none;
-      position: absolute;
-      background-color: #fff;
-      min-width: 120px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-      z-index: 1000;
-      border-radius: 4px;
-      margin-top: 4px;
-      padding: 4px 0;
+    .btn-detail:hover {
+      background-color: #3367d6;
+      text-decoration: none;
     }
-    .dropdown div {
-      padding: 8px 12px;
+    /* Pagination */
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      font-size: 15px;
+      color: #555;
+    }
+    .pagination-controls button {
+      padding: 8px 16px;
+      border: 1px solid #ccc;
+      background: white;
+      border-radius: 6px;
       cursor: pointer;
-      user-select: none;
+      font-weight: 500;
+      transition: all 0.2s;
     }
-    .dropdown div:hover {
-      background-color: #f1f1f1;
+    .pagination-controls button:hover:not(:disabled) {
+      background-color: #f0f0f0;
+      border-color: #999;
     }
-    .filter-button {
-      background-color: #00796b;
-      color: white;
-      padding: 8px 12px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
+    .pagination-controls button:disabled {
+      color: #aaa;
+      cursor: not-allowed;
     }
-    /* Responsive */
+    .pagination-info {
+      color: #666;
+    }
+    
     @media (max-width: 768px) {
-      table, thead, tbody, th, td, tr {
-        display: block;
-      }
-      thead {
-        display: none;
-      }
-      tr {
-        margin-bottom: 12px;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        background: white;
-        padding: 10px;
-      }
-      td {
-        display: flex;
-        justify-content: space-between;
-        padding: 8px 10px;
-        border: none;
-        border-bottom: 1px solid #eee;
-      }
-      td::before {
-        content: attr(data-label);
-        font-weight: bold;
-        color: #555;
-      }
-    }
+  body {
+    padding: 15px;
+  }
 
-    #headerSection {
-  text-align: center;
-  margin-bottom: 24px;
+  .back-button {
+    top: 15px;
+    left: 15px;
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+
+  header {
+    margin-top: 40px;
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-size: 24px;
+  }
+  .summary {
+    font-size: 14px;
+  }
+
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .search-container {
+    min-width: auto;
+  }
+  .btn-add {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Sembunyikan elemen tabel (thead, tbody, tr, th, td) tapi tetap tampilkan tabel */
+  table thead,
+  table tbody,
+  table tr,
+  table th,
+  table td {
+    display: none;
+  }
+
+  /* Tampilkan card dan pastikan tampil */
+  .card-container {
+    display: block;
+  }
+
+  .perumahan-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    padding: 16px;
+    margin-bottom: 16px;
+    transition: transform 0.2s;
+  }
+  .perumahan-card:hover {
+    transform: translateY(-2px);
+  }
+  .card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a3c6e;
+    margin-bottom: 8px;
+  }
+  .card-info {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 6px;
+  }
+  .card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .card-actions .btn {
+    flex: 1;
+    min-width: 70px;
+    padding: 8px 0;
+    font-size: 13px;
+    text-align: center;
+  }
+
+  /* Pagination di mobile */
+  .pagination {
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    text-align: center;
+  }
+  .pagination-info {
+    font-size: 14px;
+  }
 }
 
-#headerSection h1 {
-  color: #333;
-  margin-bottom: 16px;
-}
-
-#tools {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-#tools input,
-#tools button {
-  padding: 10px 16px;
-  font-size: 14px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
-
-#tools button {
-  background-color: #00796b;
-  color: white;
-  border: none;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-#tools button:hover {
-  background-color: #005f56;
-}
-
-.header-wrapper {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.header-wrapper h1 {
-  flex: 1;
-  text-align: center;
-  margin: 0;
-  font-size: 22px;
-  color: #333;
-}
-
-.back-button {
-  background-color: #00796b;
-  color: white;
-  padding: 8px 14px;
-  border-radius: 5px;
-  text-decoration: none;
-  font-size: 14px;
-}
-
-#tools {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 16px;
-}
 
   </style>
 </head>
 <body>
-
-  <div id="loadingOverlay">
-    <div class="spinner"></div>
-    <div>Sedang mengambil data...</div>
-  </div>
-
-  <div class="header-wrapper">
-    <a href="/" class="back-button">&larr; Kembali</a>
+  <!-- Tombol Kembali di Pojok Kiri Atas -->
+  <a href="/" class="back-button">← Kembali</a>
+  
+  <header>
+    <h1>Daftar Perumahan</h1>
+    <div class="summary" style="font-size: 20px;">Total: <span id="totalCount">0</span></div>
+  </header>
+  
+  <div class="controls">
+    <div class="search-container">
+      <input type="text" id="searchInput" class="search-input" placeholder="Cari perumahan, kontak, lokasi..." />
+    </div>
+    <button class="btn btn-add" onclick="openAddModal()" style="padding: 13px; font-size:15px;">+ Tambah Perumahan</button>
   </div>
   
-  <div class="header-wrapper">
-    <h1>Rekap Laporan Panic Button</h1>
-  </div>
-
-  <div id="tools">
-    <input type="text" id="searchInput" placeholder="Cari data..." onkeyup="renderTable()" />
-    <button onclick="exportToExcel()">Export Excel</button>
-  </div>
-
   <table>
     <thead>
       <tr>
-        <th onclick="sortBy('name')">Nama</th>
-        <th onclick="sortBy('houseNumber')">No. Rumah</th>
-        <th onclick="sortBy('message')">Pesan</th>
-        <th>
-          <div class="dropdown-container">
-            <button class="filter-button" onclick="toggleDropdown('priorityDropdown')">Prioritas ▼</button>
-            <div class="dropdown" id="priorityDropdown" >
-              <div onclick="setFilterPriority('all')">Semua</div>
-              <div onclick="setFilterPriority('darurat')">Darurat</div>
-              <div onclick="setFilterPriority('penting')">Penting</div>
-              <div onclick="setFilterPriority('biasa')">Biasa</div>
-            </div>
-          </div>
-        </th>
-        <th>
-          <div class="dropdown-container">
-            <button class="filter-button" onclick="toggleDropdown('statusDropdown')">Status ▼</button>
-            <div class="dropdown" id="statusDropdown">
-              <div onclick="setFilterStatus('all')">Semua</div>
-              <div onclick="setFilterStatus('proses')">Proses</div>
-              <div onclick="setFilterStatus('selesai')">Selesai</div>
-            </div>
-          </div>
-        </th>
-        <th onclick="sortBy('time')">Waktu</th>
+        <th>No</th>
+        <th>Nama Perumahan</th>
+        <th>Kontak</th>
         <th>Lokasi</th>
+        <th>Aksi</th>
+        <th>Detail</th> <!-- Kolom baru untuk Detail -->
       </tr>
     </thead>
-    <tbody id="monitorTableBody">
-      <tr><td colspan="7">Memuat data...</td></tr>
+    <tbody id="perumahanTableBody">
+      <tr><td colspan="6">Memuat data...</td></tr>
     </tbody>
   </table>
+  <div class="card-container" style="display:none;"></div>
+  
+  <div class="pagination">
+    <div class="pagination-info" id="paginationInfo"></div>
+    <div class="pagination-controls">
+      <button id="prevBtn" class="btn">Sebelumnya</button>
+      <button id="nextBtn" class="btn">Berikutnya</button>
+    </div>
+  </div>
+  
+  <!-- Script dengan modifikasi -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import { getDatabase, ref, onValue, set, update, remove } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+    const firebaseConfig = {
+    apiKey: "--",
+    authDomain: "--",
+    databaseURL: "--",
+    projectId: "--",
+    storageBucket: "--",
+    messagingSenderId: "--",
+    appId: "--",
+    measurementId: "--"
+  };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const daftarRef = ref(db, 'daftar_perumahan');
+    const perumahanRef = ref(db, 'perumahan');
+    const tableBody = document.getElementById('perumahanTableBody');
+    const totalCount = document.getElementById('totalCount');
+    const searchInput = document.getElementById('searchInput');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const paginationInfo = document.getElementById('paginationInfo');
+    let allData = [];
+    let currentPage = 1;
+    const itemsPerPage = 5;
+    function toSlug(text) {
+      return text.toLowerCase().replace(/\s+/g, '_');
+    }
 
-  <div id="pagination"></div>
+    const cardContainer = document.querySelector('.card-container');
+
+    function renderCards(data) {
+  const totalItems = data.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  currentPage = Math.max(1, Math.min(currentPage, totalPages));
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = Math.min(startIdx + itemsPerPage, totalItems);
+  const paginatedData = data.slice(startIdx, endIdx);
+
+  if (paginatedData.length === 0) {
+    cardContainer.innerHTML = '<p>Tidak ada data ditemukan.</p>';
+    return;
+  }
+
+  cardContainer.innerHTML = '';
+  paginatedData.forEach(({ key, nama, info }) => {
+    const card = document.createElement('div');
+    card.className = 'perumahan-card';
+    card.innerHTML = `
+      <div class="card-title">${nama}</div>
+      <div class="card-info"><strong>Kontak:</strong> ${info.kontak || '-'}</div>
+      <div class="card-info"><strong>Lokasi:</strong> ${info.lokasi || '-'}</div>
+      <div class="card-actions">
+        <button class="btn btn-edit" onclick="openEditModal('${key}', '${nama}', '${info.kontak}', '${info.lokasi}')">Edit</button>
+        <button class="btn btn-delete" onclick="confirmDelete('${key}', '${nama}')">Hapus</button>
+        <a href="/detail-perumahan.html?key=${key}" class="btn btn-detail">Lihat Detail</a>
+      </div>
+    `;
+    cardContainer.appendChild(card);
+  });
+}
+
+    function renderTable(filteredData) {
+      const totalItems = filteredData.length;
+      totalCount.textContent = filteredData.length;
+      const totalPages = Math.ceil(totalItems / itemsPerPage);
+      currentPage = Math.max(1, Math.min(currentPage, totalPages));
+      const startIdx = (currentPage - 1) * itemsPerPage;
+      const endIdx = Math.min(startIdx + itemsPerPage, totalItems);
+      tableBody.innerHTML = '';
+      if (totalItems === 0) {
+        tableBody.innerHTML = '<tr><td colspan="6">Tidak ada data ditemukan.</td></tr>';
+      } else {
+        for (let i = startIdx; i < endIdx; i++) {
+          const { key, nama, info } = filteredData[i];
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${i + 1}</td>
+            <td>${nama}</td>
+            <td>${info.kontak || '-'}</td>
+            <td>${info.lokasi || '-'}</td>
+            <td>
+              <button class="btn btn-edit" onclick="openEditModal('${key}', '${nama}', '${info.kontak}', '${info.lokasi}')">Edit</button>
+              <button class="btn btn-delete" onclick="confirmDelete('${key}', '${nama}')">Hapus</button>
+            </td>
+            <td>
+              <a href="/detail-perumahan.html?key=${key}" class="btn btn-detail">Lihat Detail</a>
+            </td>`;
+          tableBody.appendChild(row);
+        }
+      }
+      paginationInfo.textContent = `Menampilkan ${startIdx + 1} - ${endIdx} dari ${totalItems} data`;
+      prevBtn.disabled = currentPage === 1;
+      nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+      if (window.innerWidth <= 768) {
+        cardContainer.style.display = 'block';
+        renderCards(filteredData);
+      } else {
+        cardContainer.style.display = 'none';
+      }
+      
+      
+    }
+    function filterData(query) {
+      return allData.filter(({ nama, info }) => {
+        const q = query.toLowerCase();
+        return (
+          nama.toLowerCase().includes(q) ||
+          (info.kontak || '').toLowerCase().includes(q) ||
+          (info.lokasi || '').toLowerCase().includes(q) ||
+          (info.nama || '').toLowerCase().includes(q)
+        );
+      });
+    }
+    searchInput.addEventListener('input', () => {
+      currentPage = 1;
+      renderTable(filterData(searchInput.value));
+    });
+    prevBtn.addEventListener('click', () => {
+      currentPage--;
+      renderTable(filterData(searchInput.value));
+    });
+    nextBtn.addEventListener('click', () => {
+      currentPage++;
+      renderTable(filterData(searchInput.value));
+    });
+    window.addEventListener('resize', () => {
+  renderTable(filterData(searchInput.value));
+});
+
+    let daftarPerumahan = {};
+    let detailPerumahan = {};
+    function mergeData() {
+      allData = [];
+      for (const key in daftarPerumahan) {
+        allData.push({
+          key,
+          nama: daftarPerumahan[key],
+          info: detailPerumahan[key]?.info || {}
+        });
+      }
+      renderTable(filterData(searchInput.value));
+    }
+    onValue(daftarRef, snap => {
+      daftarPerumahan = snap.val() || {};
+      mergeData();
+    });
+    onValue(perumahanRef, snap => {
+      detailPerumahan = snap.val() || {};
+      mergeData();
+    });
+    window.openAddModal = () => {
+  Swal.fire({
+    title: 'Tambah Perumahan',
+    html: `
+      <style>
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .form-wrapper {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          font-size: 14px;
+          text-align: left;
+        }
+        .form-wrapper label {
+          font-weight: 600;
+          margin-bottom: 0px !important;
+        }
+        .swal2-input {
+          width: 100% !important;
+          box-sizing: border-box;
+          margin-left: auto;
+          margin-top: 10px !important;
+        }
+      </style>
+      <div class="form-wrapper">
+        <div class="form-group" style="margin-top: 13px;">
+          <label for="nama">Nama Perumahan</label>
+          <input id="nama" class="swal2-input" placeholder="Masukkan nama perumahan">
+        </div>
+        <div class="form-group">
+          <label for="kontak">Kontak</label>
+          <input id="kontak" class="swal2-input" placeholder="Masukkan nomor kontak">
+        </div>
+        <div class="form-group">
+          <label for="lokasi">Lokasi</label>
+          <input id="lokasi" class="swal2-input" placeholder="Masukkan lokasi">
+        </div>
+      </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: 'Simpan',
+    cancelButtonText: 'Batal',
+    customClass: {
+      confirmButton: 'swal2-confirm swal2-styled',
+      cancelButton: 'swal2-cancel swal2-styled'
+    },
+    focusConfirm: false,
+    preConfirm: () => {
+      const nama = document.getElementById('nama').value.trim();
+      const kontak = document.getElementById('kontak').value.trim();
+      const lokasi = document.getElementById('lokasi').value.trim();
+      if (!nama || !kontak || !lokasi) {
+        Swal.showValidationMessage('Semua field harus diisi');
+        return false;
+      }
+      return { nama, kontak, lokasi };
+    }
+  }).then(res => {
+    if (res.isConfirmed) {
+      const { nama, kontak, lokasi } = res.value;
+      const key = toSlug(nama);
+      const updates = {};
+      updates[`daftar_perumahan/${key}`] = nama;
+      updates[`perumahan/${key}/info`] = { kontak, lokasi, nama };
+      updates[`perumahan/${key}/buzzers`] = {
+        main: { priority: 'off', state: 'off' },
+        buzzer_utama: { priority: 'off', state: 'off' }
+      };
+      updates[`perumahan/${key}/monitor`] = {};
+      updates[`perumahan/${key}/users`] = {};
+      update(ref(db), updates).then(() => {
+        Swal.fire('Sukses', 'Data berhasil ditambahkan', 'success');
+      });
+    }
+  });
+};
+
+window.openEditModal = (key, nama, kontak, lokasi) => {
+  Swal.fire({
+    title: 'Edit Data Perumahan',
+    html: `
+      <style>
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .form-wrapper {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          font-size: 14px;
+          text-align: left;
+        }
+        .form-wrapper label {
+          font-weight: 600;
+          margin-bottom: 0px !important;
+        }
+        .swal2-input {
+          width: 100% !important;
+          box-sizing: border-box;
+          margin-left: auto;
+          margin-top: 10px !important;
+        }
+      </style>
+      <div class="form-wrapper">
+        <div class="form-group" style="margin-top: 13px;">
+          <label for="nama">Nama Perumahan</label>
+          <input id="nama" class="swal2-input" placeholder="Masukkan nama perumahan" value="${nama}">
+        </div>
+        <div class="form-group">
+          <label for="kontak">Kontak</label>
+          <input id="kontak" class="swal2-input" placeholder="Masukkan nomor kontak" value="${kontak}">
+        </div>
+        <div class="form-group">
+          <label for="lokasi">Lokasi</label>
+          <input id="lokasi" class="swal2-input" placeholder="Masukkan lokasi" value="${lokasi}">
+        </div>
+      </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: 'Simpan',
+    cancelButtonText: 'Batal',
+    customClass: {
+      confirmButton: 'swal2-confirm swal2-styled',
+      cancelButton: 'swal2-cancel swal2-styled'
+    },
+    focusConfirm: false,
+    preConfirm: () => {
+      const namaBaru = document.getElementById('nama').value.trim();
+      const kontakBaru = document.getElementById('kontak').value.trim();
+      const lokasiBaru = document.getElementById('lokasi').value.trim();
+      if (!namaBaru || !kontakBaru || !lokasiBaru) {
+        Swal.showValidationMessage('Semua field harus diisi');
+        return false;
+      }
+      return { namaBaru, kontakBaru, lokasiBaru };
+    }
+  }).then(res => {
+    if (res.isConfirmed) {
+      const { namaBaru, kontakBaru, lokasiBaru } = res.value;
+      const updates = {};
+      updates[`daftar_perumahan/${key}`] = namaBaru;
+      updates[`perumahan/${key}/info`] = {
+        kontak: kontakBaru,
+        lokasi: lokasiBaru,
+        nama: namaBaru
+      };
+      update(ref(db), updates).then(() => {
+        Swal.fire('Berhasil', 'Data berhasil diubah', 'success');
+      });
+    }
+  });
+};
+
+    window.confirmDelete = (key, nama) => {
+      Swal.fire({
+        title: `Hapus ${nama}?`,
+        text: "Tindakan ini tidak dapat dikembalikan!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, hapus',
+        cancelButtonText: 'Batal'
+      }).then(result => {
+        if (result.isConfirmed) {
+          const updates = {};
+          updates[`daftar_perumahan/${key}`] = null;
+          updates[`perumahan/${key}`] = null;
+          update(ref(db), updates).then(() => {
+            Swal.fire('Terhapus!', 'Data berhasil dihapus.', 'success');
+          });
+        }
+      });
+    };
+  </script>
 </body>
 </html>

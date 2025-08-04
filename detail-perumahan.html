@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Detail Monitor</title>
+  <link rel="icon" href="http://103.255.15.227/lifemedia_logo.png?v=1753515070" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    th:nth-child(3),
+    td:nth-child(3) {
+      width: 360px;
+      max-width: 360px;
+      text-align: center;
+    }
+
+    th:nth-child(1),
+    td:nth-child(1) {
+      width: 70px;
+      max-width: 70px;
+      text-align: center;
+    }
+
+    th:nth-child(2),
+    td:nth-child(2) {
+      width: 85px;
+      max-width:85px;
+      text-align: center;
+    }
+
+    th:nth-child(6),
+    td:nth-child(6) {
+      width: 200px;
+      max-width:200px;
+      text-align: center;
+    }
+
+    th:nth-child(7),
+    td:nth-child(7) {
+      width: 180px;
+      max-width:180px;
+      text-align: center;
+    }
+
+    th:nth-child(4),
+    td:nth-child(4),
+    th:nth-child(5),
+    td:nth-child(5) {
+      width: 80px;
+      max-width: 80px;
+      text-align: center;
+    }
+
+    body {
+      font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #F9F5DA;
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: #000;
+      margin-bottom: 20px;
+      font-weight: 600;
+      font-size: 2rem;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .btn-back {
+      display: inline-block;
+      margin: 10px 0 20px;
+      padding: 10px 20px;
+      background: #fff;
+      color: #2575fc;
+      font-weight: 600;
+      border-radius: 50px;
+      text-decoration: none;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .btn-back:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+      background: #f8f9ff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #ffffff;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    th {
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
+      color: #fff;
+      font-weight: 600;
+      padding: 16px 12px;
+      text-align: center;
+      text-transform: uppercase;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      padding: 14px 12px;
+      text-align: center;
+      border-bottom: 1px solid #eee;
+      color: #444;
+    }
+
+    tr {
+      transition: all 0.3s ease;
+    }
+
+    tr:hover {
+      background: #f0f8ff;
+      transform: scale(1.005);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    td a {
+      color: #007BFF;
+      font-weight: 500;
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    td a:hover {
+      background: #007BFF;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    /* Responsive Mode */
+    @media (max-width: 768px) {
+      
+      body {
+        padding: 15px;
+      }
+
+      h1 {
+        font-size: 1.6rem;
+      }
+
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      thead {
+        display: none;
+      }
+
+      tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      tr {
+        background-color: #fff;
+        padding: 16px;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      }
+
+      td {
+        border: none;
+        padding: 6px 0;
+        position: relative;
+      }
+
+      td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        display: block;
+        color: #2575fc;
+        margin-bottom: 4px;
+        font-size: 14px;
+      }
+
+      #paginationContainer {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    #paginationContainer > span {
+      margin-bottom: 8px;
+    }
+
+    #paginationContainer > div {
+      width: 100%;
+      justify-content: flex-start;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    #paginationContainer button {
+      flex: 1 1 auto; /* tombol bisa melebar memenuhi ruang */
+      margin-left: 0;
+      padding: 10px;
+      font-size: 16px;
+    }
+    }
+
+    #filterControls select,
+  #filterControls input {
+    font-family: inherit;
+    font-size: 14px;
+    transition: 0.3s ease;
+    outline: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  #filterControls input#search {
+    background-color: #d7f2f0;
+    border: 1px solid #b0c4ff;
+  }
+
+  #filterControls input#search:focus {
+    border-color: #5b8def;
+    box-shadow: 0 0 0 2px rgba(91, 141, 239, 0.3);
+  }
+
+  #filterControls select {
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    padding-left: 34px; /* space for icon */
+    background-repeat: no-repeat;
+    background-position: 10px center;
+    background-size: 16px;
+  }
+
+  #statusFilter {
+    background-image: url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/status-up.svg');
+  }
+
+  #priorityFilter {
+    background-image: url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/flag.svg');
+  }
+
+  #sortOrder {
+    background-image: url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/sort-descending.svg');
+  }
+
+  /* Optional hover/focus effect */
+  #filterControls select:hover,
+  #filterControls select:focus {
+    border-color: #5b8def;
+    box-shadow: 0 0 0 2px rgba(91, 141, 239, 0.2);
+  }
+
+  button {
+    background-color: #4CAF50; /* hijau segar */
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, opacity 0.3s ease;
+  }
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #ccc;
+    color: #666;
+  }
+
+  button:not(:disabled):hover {
+    background-color: #45a049;
+  }
+
+  span {
+    font-size: 16px;
+    color: #333;
+  }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 id="title">Detail Monitor</h1>
+    <a href="rekap.html" class="btn-back">← Kembali ke Rekap</a>
+    <table id="monitorTable">
+      <thead>
+        <tr>
+          <th>Nama</th>
+          <th>No Rumah</th>
+          <th>Pesan</th>
+          <th>Prioritas</th>
+          <th>Status</th>
+          <th>Waktu</th>
+          <th>Lokasi</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "--",
+    authDomain: "--",
+    databaseURL: "--",
+    projectId: "--",
+    storageBucket: "--",
+    messagingSenderId: "--",
+    appId: "--",
+    measurementId: "--"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const params = new URLSearchParams(window.location.search);
+  const key = params.get('key');
+
+  const titleElement = document.getElementById('title');
+  const tableBody = document.querySelector("#monitorTable tbody");
+  const tableElement = document.getElementById('monitorTable');
+
+  let allData = [];
+  let currentPage = 1;
+  const itemsPerPage = 10;
+
+  // Tambah filter & search UI
+  tableElement.insertAdjacentHTML("beforebegin", `
+    <div id="filterControls" style="display:flex;gap:10px;margin:20px 0;flex-wrap:wrap;">
+      <input type="text" id="search" placeholder="Cari data..." style="flex:1 1 100%;min-width:200px;padding:8px;border-radius:8px;border:1px solid #ccc;">
+      <select id="statusFilter" style="flex:1 1 25%;min-width:200px;padding:8px;border-radius:8px;border:1px solid #ccc;">
+        <option value="">Status: Semua</option>
+        <option value="Proses">Proses</option>
+        <option value="Selesai">Selesai</option>
+      </select>
+      <select id="priorityFilter" style="flex:1 1 25%;min-width:200px;padding:8px;border-radius:8px;border:1px solid #ccc;">
+        <option value="">Prioritas: Semua</option>
+        <option value="Biasa">Biasa</option>
+        <option value="Penting">Penting</option>
+        <option value="Darurat">Darurat</option>
+      </select>
+      <select id="sortOrder" style="flex:1 1 25%;min-width:200px;padding:8px;border-radius:8px;border:1px solid #ccc;">
+        <option value="desc">Waktu: Terbaru</option>
+        <option value="asc">Waktu: Terlama</option>
+      </select>
+    </div>
+  `);
+
+  // Pagination
+  tableElement.insertAdjacentHTML("afterend", `<div id="pagination" style="margin-top:20px;text-align:center;"></div>`);
+
+  const searchInput = document.getElementById("search");
+  const statusFilter = document.getElementById("statusFilter");
+  const priorityFilter = document.getElementById("priorityFilter");
+  const sortOrder = document.getElementById("sortOrder");
+  const pagination = document.getElementById("pagination");
+
+  const namaPerumahanRef = ref(db, `daftar_perumahan/${key}`);
+  get(namaPerumahanRef).then(snapshot => {
+    titleElement.textContent = snapshot.exists() ? `Detail Monitor: ${snapshot.val()}` : `Detail Monitor: ${key}`;
+  });
+
+  async function loadMonitorData() {
+    const monitorRef = ref(db, `perumahan/${key}/monitor`);
+    const snapshot = await get(monitorRef);
+    if (!snapshot.exists()) {
+      tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#888;">Tidak ada data monitor ditemukan.</td></tr>';
+      return;
+    }
+    allData = Object.values(snapshot.val()).map(item => ({
+      name: item.name || '-',
+      houseNumber: item.houseNumber || '-',
+      message: item.message || '-',
+      priority: item.priority || '-',
+      status: item.status || '-',
+      time: item.time || '-',
+      timestamp: parseTimestamp(item.time || '-'),
+      latitude: item.latitude || 0,
+      longitude: item.longitude || 0
+    }));
+    renderTable();
+  }
+
+  function parseTimestamp(timeStr) {
+    const match = timeStr.match(/^(\d{4}-\d{2}-\d{2}) waktu (\d{2}:\d{2})$/);
+    return match ? new Date(`${match[1]}T${match[2]}:00`) : new Date(0);
+  }
+
+  function renderTable() {
+    let filtered = [...allData];
+
+    const searchVal = searchInput.value.toLowerCase();
+    if (searchVal) {
+      filtered = filtered.filter(item =>
+        Object.values(item).some(v => String(v).toLowerCase().includes(searchVal))
+      );
+    }
+
+    if (statusFilter.value) {
+      filtered = filtered.filter(item => item.status === statusFilter.value);
+    }
+
+    if (priorityFilter.value) {
+      filtered = filtered.filter(item => item.priority === priorityFilter.value);
+    }
+
+    filtered.sort((a, b) =>
+      sortOrder.value === 'asc' ? a.timestamp - b.timestamp : b.timestamp - a.timestamp
+    );
+
+    const totalItems = filtered.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    currentPage = Math.min(currentPage, totalPages || 1);
+    const startIdx = (currentPage - 1) * itemsPerPage;
+    const endIdx = Math.min(startIdx + itemsPerPage, totalItems);
+    const paginatedData = filtered.slice(startIdx, endIdx);
+
+    tableBody.innerHTML = paginatedData.map(item => `
+      <tr>
+        <td data-label="Nama">${item.name}</td>
+        <td data-label="No Rumah">${item.houseNumber}</td>
+        <td data-label="Pesan">${item.message}</td>
+        <td data-label="Prioritas">
+          <span style="background:${getPriorityColor(item.priority)};color:${getTextColor(item.priority)};padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;">
+            ${item.priority}
+          </span>
+        </td>
+        <td data-label="Status">
+          <span style="background:${item.status === 'Selesai' ? '#4CAF50' : '#FFC107'};color:white;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;">
+            ${item.status}
+          </span>
+        </td>
+        <td data-label="Waktu">${item.time}</td>
+        <td data-label="Lokasi" style="font-size:15px;">${
+          item.latitude && item.longitude
+            ? `<a href="https://www.google.com/maps?q=${item.latitude},${item.longitude}" target="_blank">📍 Lihat Lokasi</a>`
+            : '<span style="color:#aaa;">-</span>'
+        }</td>
+      </tr>
+    `).join('');
+
+    pagination.innerHTML = `
+      <div id="paginationContainer" style="display: flex; align-items: center; justify-content: space-between;">
+      <span id="currentpageinfo" style=" /* kamu bisa hapus display:block dan text-align: left; karena ini otomatis di flex */ ">
+        Menampilkan ${totalItems === 0 ? 0 : startIdx + 1} - ${endIdx} dari ${totalItems} data
+      </span>
+
+      <div>
+        <button id="prevBtn" ${currentPage === 1 ? 'disabled style="margin-right:7px; opacity:0.5;cursor:not-allowed;"' : ''}>← Sebelumnya</button>
+        <button id="nextBtn" ${currentPage === totalPages || totalPages === 0 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>Berikutnya →</button>
+      </div>
+    </div>
+    `;
+
+    // Attach pagination listeners after rendering buttons
+    document.getElementById('prevBtn')?.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderTable();
+      }
+    });
+
+    document.getElementById('nextBtn')?.addEventListener('click', () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderTable();
+      }
+    });
+  }
+
+  function getPriorityColor(priority) {
+    return priority === 'Darurat' ? '#F44336' :
+           priority === 'Penting' ? '#FFEB3B' :
+           priority === 'Biasa' ? '#4CAF50' : '#9E9E9E';
+  }
+
+  function getTextColor(priority) {
+    return priority === 'Penting' ? '#000' : '#fff';
+  }
+
+  [searchInput, statusFilter, priorityFilter, sortOrder].forEach(el => {
+    el.addEventListener('input', () => {
+      currentPage = 1;
+      renderTable();
+    });
+  });
+
+  loadMonitorData();
+</script>
+
+
+</body>
+</html>

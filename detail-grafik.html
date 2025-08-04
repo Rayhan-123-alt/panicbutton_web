@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Statistik Panic Button</title>
+  <link rel="icon" href="http://103.255.15.227/lifemedia_logo.png?v=1753515070" type="image/png">
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+
+    /* === Modal Stylish === */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 90%;
+  width: 400px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  animation: fadeInUp 0.3s ease;
+  position: relative;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal h2 {
+  margin-top: 0;
+  font-size: 1.4rem;
+  color: var(--accent);
+}
+
+.modal p {
+  margin-bottom: 1em;
+  color: var(--dark);
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #999;
+  transition: color 0.2s ease;
+}
+
+.modal-close:hover {
+  color: var(--danger);
+}
+
+    :root {
+      --primary: #4CAF50;
+      --danger: #F44336;
+      --warning: #FFC107;
+      --info: #2196F3;
+      --gray: #f4f6f8;
+      --dark: #333;
+      --accent: #673AB7;
+      --white: #fff;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--gray);
+      color: var(--dark);
+      margin: 0;
+      padding: 20px 10px;
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--primary);
+      font-size: 2rem;
+      margin-bottom: 30px;
+    }
+
+    .back-button {
+      display: block;
+      text-align: center;
+      background: linear-gradient(135deg, #40dce4, #1079d4);
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 12px 28px;
+      margin: 0 auto 30px;
+      border-radius: 50px;
+      width: fit-content;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transition: all 0.35s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .back-button:hover {
+      background: linear-gradient(135deg, #12fff7, #36f1cd);
+      color: #000;
+      transform: translateY(-2px) scale(1.04);
+      box-shadow: 0 6px 16px rgba(0, 255, 229, 0.6);
+    }
+
+    .chart-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 25px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .chart-container {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chart-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(103, 58, 183, 0.05), rgba(0, 255, 229, 0.07));
+      transition: width 0.3s ease;
+      z-index: 0;
+    }
+
+    .chart-container:hover::before {
+      width: 100%;
+    }
+
+    .chart-container:hover {
+      transform: translateY(-6px) scale(1.01);
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
+      /* cursor: pointer; */
+    }
+
+    .chart-container * {
+      position: relative;
+      z-index: 1;
+    }
+
+
+    .chart-title {
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--accent);
+      position: relative;
+    }
+
+    .chart-title::after {
+      content: '';
+      display: block;
+      width: 50px;
+      height: 3px;
+      background: var(--accent);
+      margin: 8px auto 0;
+      border-radius: 2px;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+      cursor: pointer;
+    }
+
+    .chart-users {
+      margin-top: 40px;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    @media (min-width: 768px) {
+      .chart-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 35px;
+      }
+    }
+
+    /* Loading Overlay */
+    #loadingOverlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: white;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-size: 18px;
+    }
+
+    .spinner {
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid var(--accent);
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 600px) {
+  #lihatPerbandinganBtn {
+    position: static !important;
+    margin: 15px auto 20px auto;
+    display: block;
+    padding: 6px 10px; /* Ukuran tombol wajar */
+    font-size: 10px; /* Ukuran teks ideal */
+    width: fit-content; /* Tidak terlalu lebar */
+    max-width: 90%; /* Hindari kepanjangan */
+    text-align: center;
+  }
+}
+
+  </style>
+</head>
+<body>
+
+<a href="/stats.html" class="back-button">← Kembali</a>
+
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <div>Sedang mengambil data...</div>
+</div>
+
+<h1>Statistik <span style="color: rgba(253, 66, 66, 0.894);">Panic Button</span></h1>
+
+<div class="chart-grid">
+  <div class="chart-container">
+    <div class="chart-title">Prioritas Peringatan</div>
+    <canvas id="barChart"></canvas>
+    <small style="display: block; text-align: center; color: #777; margin-top: 10px; font-style: italic;">
+      * Klik grafik untuk melihat detail pengguna
+    </small>
+  </div>
+
+  <div class="chart-container" style="position: relative;">
+    <div class="chart-title">Status Peringatan</div>
+    <button id="lihatPerbandinganBtn" style="position: absolute; top: 20px; right: 30px; background: var(--info); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer;">
+      Lihat Perbandingan
+    </button>
+    <canvas id="pieChart"></canvas>
+    <small style="display: block; text-align: center; color: #777; margin-top: 15px; font-style: italic;">
+      * Klik grafik untuk melihat detail pengguna
+    </small>
+  </div>
+
+<div class="chart-container chart-users">
+  <div class="chart-title">Ranking Jumlah Tekan Tombol per Pengguna</div>
+  <canvas id="rankingChart"></canvas>
+  <small style="display: block; text-align: center; color: #777; margin-top: 10px; font-style: italic;">
+      * Klik grafik untuk melihat detail pengguna
+    </small>
+</div>
+
+<!-- Firebase & Chart Rendering -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+  import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+  import { child } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+  
+  // 1. Ambil ID perumahan dari URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const perumahanId = urlParams.get('perumahan');
+  
+  if (!perumahanId) {
+    document.getElementById('loadingOverlay').style.display = 'none';
+    document.body.innerHTML = `
+      <div style="text-align: center; padding: 50px;">
+        <h1>Error</h1>
+        <p>Perumahan ID tidak ditemukan. Pastikan Anda mengakses halaman ini melalui dashboard perumahan.</p>
+        <a href="stats.html" class="back-button">Kembali ke Rekap Grafik Perumahan</a>
+      </div>
+    `;
+    throw new Error('Perumahan ID not specified');
+  }
+
+  const firebaseConfig = {
+    apiKey: "--",
+    authDomain: "--",
+    databaseURL: "--",
+    projectId: "--",
+    storageBucket: "--",
+    messagingSenderId: "--",
+    appId: "--",
+    measurementId: "--"
+  };
+  
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const daftarPerumahanRef = ref(db, `daftar_perumahan/${perumahanId}`);
+
+get(daftarPerumahanRef)
+  .then(snapshot => {
+    const perumahanName = snapshot.val() || `ID: ${perumahanId}`;
+    const h1 = document.querySelector('h1');
+    h1.innerHTML += `
+  <span style="color: #888; font-size:1rem; display:block; margin-bottom:-15px; margin-top:18px;">PERUMAHAN:</span>
+  <strong style="color: #2c2c2c; text-transform: uppercase; font-size: 1rem; font-weight: 500;">
+    ${perumahanName}
+  </strong>
+`;
+
+  })
+  .catch(error => {
+    console.error("Gagal mengambil nama perumahan:", error);
+  });
+  
+  // 2. Ubah referensi monitor ke struktur per perumahan
+  const monitorRef = ref(db, `perumahan/${perumahanId}/monitor`);
+  
+  let barChart, pieChart, lineChart;
+  
+  function createInitialData() {
+    return {
+      darurat: 0,
+      penting: 0,
+      biasa: 0,
+      statusSelesai: 0,
+      statusProses: 0,
+      usersData: {}
+    };
+  }
+  
+  async function getMonitorData() {
+    // Fungsi helper untuk mengambil data monitor secara konsisten
+    const snapshot = await get(monitorRef);
+    return snapshot.val();
+  }
+  
+  function updateCharts(data) {
+    // Bar Chart
+    const barData = {
+      labels: ['Darurat', 'Penting', 'Biasa'],
+      datasets: [{
+        label: 'Jumlah Peringatan',
+        data: [data.darurat, data.penting, data.biasa],
+        backgroundColor: ['#F44336', '#FFC107', '#4CAF50'],
+        borderRadius: 5
+      }]
+    };
+    
+    if (barChart) barChart.destroy();
+    barChart = new Chart(document.getElementById('barChart'), {
+      type: 'bar',
+      data: barData,
+      options: {
+        responsive: true,
+        aspectRatio: window.innerWidth < 600 ? 1.2 : 2,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } },
+        onClick: async (evt, elements) => {
+          if (elements.length > 0) {
+            const index = elements[0].index;
+            const selectedPriority = barData.labels[index].toLowerCase();
+            
+            // 3. Gunakan fungsi helper untuk mengambil data monitor
+            const raw = await getMonitorData();
+            const filtered = {};
+            
+            if (raw) {
+              Object.values(raw).forEach(item => {
+                const prio = (item.priority || "").toLowerCase();
+                const name = item.name || "Unknown";
+                if (prio === selectedPriority) {
+                  if (!filtered[name]) filtered[name] = 0;
+                  filtered[name]++;
+                }
+              });
+            }
+            
+            const priorityColors = {
+              darurat: '#F44336',
+              penting: '#DCB713',
+              biasa: 'green'
+            };
+            
+            const sortedEntries = Object.entries(filtered).sort((a, b) => b[1] - a[1]);
+            let html = `<p style="text-transform: capitalize;">
+              <strong>Seberapa sering orang-orang ini menekan panic button dengan prioritas ${selectedPriority}</strong>
+            </p>`;
+            
+            html += `<table style="width: 100%; border-collapse: collapse; text-align: left;">
+              <thead>
+                <tr style="background: #eee;">
+                  <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">Nama</th>
+                  <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">Jumlah</th>
+                </tr>
+              </thead>
+              <tbody>`;
+              
+            for (const [name, count] of sortedEntries) {
+              html += `<tr>
+                <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">${name}</td>
+                <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">${count}</td>
+              </tr>`;
+            }
+            html += `</tbody></table>`;
+            
+            const formattedTitle = `
+              <span style="
+                background-color: ${priorityColors[selectedPriority]};
+                color: white;
+                padding: 4px 12px;
+                border-radius: 12px;
+                font-weight: 600;
+                font-size: 1.1rem;
+                display: inline-block;
+              ">
+                ${selectedPriority.charAt(0).toUpperCase() + selectedPriority.slice(1)}
+              </span>
+            `;
+            
+            openModal(`Prioritas: ${formattedTitle}`, html);
+          }
+        }
+      }
+    });
+    
+    // Pie Chart
+    const total = data.statusSelesai + data.statusProses || 1;
+    const selesaiPercent = ((data.statusSelesai / total) * 100).toFixed(1);
+    const prosesPercent = ((data.statusProses / total) * 100).toFixed(1);
+    
+    const pieData = {
+      labels: [`Proses ${prosesPercent}%`, `Selesai ${selesaiPercent}%`],
+      datasets: [{
+        data: [data.statusProses, data.statusSelesai],
+        backgroundColor: ['#FA1AE7', '#1AE7FA'],
+        hoverOffset: 20
+      }]
+    };
+    
+    if (pieChart) pieChart.destroy();
+    pieChart = new Chart(document.getElementById('pieChart'), {
+      type: 'pie',
+      data: pieData,
+      options: {
+        responsive: true,
+        aspectRatio: window.innerWidth < 600 ? 1 : 1.6,
+        onClick: async (evt, elements) => {
+          if (elements.length > 0) {
+            const index = elements[0].index;
+            const selectedStatus = pieData.labels[index].toLowerCase().includes('selesai') ? 'selesai' : 'proses';
+            
+            // 3. Gunakan fungsi helper untuk mengambil data monitor
+            const raw = await getMonitorData();
+            const filtered = {};
+            
+            if (raw) {
+              Object.values(raw).forEach(item => {
+                const status = (item.status || "").toLowerCase();
+                const name = item.name || "Unknown";
+                if (status === selectedStatus) {
+                  if (!filtered[name]) filtered[name] = 0;
+                  filtered[name]++;
+                }
+              });
+            }
+            
+            let sub = `Berikut Orang-orang dengan Status Laporan : <strong>Selesai</strong>`;
+            if (selectedStatus === 'proses') {
+              sub = `Berikut Orang-orang dengan Status Laporan : <strong>Proses</strong>`;
+            }
+            
+            const sortedEntries = Object.entries(filtered).sort((a, b) => b[1] - a[1]);
+            let html = `<p>${sub}</p>`;
+            
+            html += `<table style="width: 100%; border-collapse: collapse; text-align: left;">
+              <thead>
+                <tr style="background: #eee;">
+                  <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">Nama</th>
+                  <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">Jumlah</th>
+                </tr>
+              </thead>
+              <tbody>`;
+              
+            for (const [name, count] of sortedEntries) {
+              html += `<tr>
+                <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">${name}</td>
+                <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">${count}</td>
+              </tr>`;
+            }
+            html += `</tbody></table>`;
+            
+            const statusColors = {
+              selesai: '#1078BD',
+              proses: '#FA1AE7'
+            };
+            
+            const modalTitle = `
+              <span style="
+                background-color: ${statusColors[selectedStatus.toLowerCase()] || '#888'};
+                color: white;
+                padding: 4px 12px;
+                border-radius: 12px;
+                font-weight: 600;
+                font-size: 1.1rem;
+                display: inline-block;
+              ">
+                ${selectedStatus.charAt(0).toUpperCase() + selectedStatus.slice(1)}
+              </span>
+            `;
+            
+            openModal(`Status: ${modalTitle}`, html);
+          }
+        }
+      }
+    });
+    
+    // Tombol Lihat Perbandingan
+    document.getElementById('lihatPerbandinganBtn').addEventListener('click', async () => {
+      // 3. Gunakan fungsi helper untuk mengambil data monitor
+      const raw = await getMonitorData();
+      const userStats = {};
+      
+      if (raw) {
+        Object.values(raw).forEach(item => {
+          const name = item.name || "Unknown";
+          const status = (item.status || "").toLowerCase();
+          if (!userStats[name]) userStats[name] = { selesai: 0, proses: 0 };
+          if (status === "selesai") userStats[name].selesai++;
+          else if (status === "proses") userStats[name].proses++;
+        });
+      }
+      
+      const sortedEntries = Object.entries(userStats).sort((a, b) => {
+        const totalA = a[1].selesai + a[1].proses;
+        const totalB = b[1].selesai + b[1].proses;
+        return totalB - totalA;
+      });
+      
+      let html = `
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+          <thead>
+            <tr style="background: #eee;">
+              <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">No</th>
+              <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">Nama</th>
+              <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">Status Selesai</th>
+              <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">Status Proses</th>
+              <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">%</th>
+            </tr>
+          </thead>
+          <tbody>`;
+          
+      let i = 1;
+      for (const [name, stat] of sortedEntries) {
+        const total = stat.selesai + stat.proses;
+        const percentage = total > 0 ? ((stat.selesai / total) * 100).toFixed(1) : "0.0";
+        html += `<tr>
+          <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">${i++}</td>
+          <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">${name}</td>
+          <td style="padding: 8px; border: 1px solid #ccc; text-align: center; background-color: #d4f7dc;">${stat.selesai}</td>
+          <td style="padding: 8px; border: 1px solid #ccc; text-align: center; background-color: #f7d4d4;">${stat.proses}</td>
+          <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">${percentage}%</td>
+        </tr>`;
+      }
+      html += `</tbody></table>`;
+      
+      openModal("Perbandingan Status Peringatan", html);
+    });
+    
+    // Horizontal Bar Chart
+    const ranking = Object.entries(data.usersData).map(([name, userData]) => ({
+      name, total: userData.timestamps.length
+    })).sort((a, b) => b.total - a.total);
+    
+    const labels = ranking.map(item => item.name);
+    const totals = ranking.map(item => item.total);
+    
+    const rankingData = {
+      labels,
+      datasets: [{
+        label: 'Jumlah Tekan Tombol',
+        data: totals,
+        backgroundColor: '#673AB7',
+        borderRadius: 5
+      }]
+    };
+    
+    if (lineChart) lineChart.destroy();
+    lineChart = new Chart(document.getElementById('rankingChart'), {
+      type: 'bar',
+      data: rankingData,
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        aspectRatio: window.innerWidth < 600 ? 1.5 : 2.2,
+        plugins: { legend: { display: false } },
+        onClick: async (evt, elements) => {
+          if (elements.length > 0) {
+            const index = elements[0].index;
+            const userName = labels[index];
+            
+            // 3. Gunakan fungsi helper untuk mengambil data monitor
+            const raw = await getMonitorData();
+            
+            // Hitung prioritas untuk userName
+            const counts = { darurat: 0, penting: 0, biasa: 0 };
+            if (raw) {
+              Object.values(raw).forEach(item => {
+                if ((item.name || '').toLowerCase() === userName.toLowerCase()) {
+                  const prio = (item.priority || '').toLowerCase();
+                  if (prio === 'darurat') counts.darurat++;
+                  else if (prio === 'penting') counts.penting++;
+                  else counts.biasa++;
+                }
+              });
+            }
+            
+            // Buat tabel HTML
+            const rowStyle = (color) => `style="background-color: ${color}; padding: 8px; border: 1px solid #ccc;"`;
+            const html = `
+              <table style="border-collapse: collapse; width: 100%; text-align: left;">
+                <thead>
+                  <tr>
+                    <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">Status</th>
+                    <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">Jumlah</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr ${rowStyle('rgba(244, 67, 54, 0.15)')}>
+                    <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">Darurat</td>
+                    <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">${counts.darurat}</td>
+                  </tr>
+                  <tr ${rowStyle('rgba(255, 193, 7, 0.15)')}>
+                    <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">Penting</td>
+                    <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">${counts.penting}</td>
+                  </tr>
+                  <tr ${rowStyle('rgba(76, 175, 80, 0.15)')}>
+                    <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">Biasa</td>
+                    <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">${counts.biasa}</td>
+                  </tr>
+                </tbody>
+              </table>
+            `;
+            
+            openModal(`Detail Pengguna: ${userName} - ${counts.darurat + counts.penting + counts.biasa}`, html);
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            title: { display: true, text: 'Jumlah Tekan Tombol' },
+            ticks: { precision: 0 }
+          },
+          y: {
+            title: { display: true, text: 'Nama Pengguna' }
+          }
+        }
+      }
+    });
+  }
+  
+  // 4. Gunakan referensi monitor yang sudah diubah
+  onValue(monitorRef, (snapshot) => {
+    const raw = snapshot.val();
+    const data = createInitialData();
+    
+    if (raw) {
+      Object.values(raw).forEach(item => {
+        if (!item) return;
+        
+        const prio = (item.priority || "").toLowerCase();
+        if (prio === "darurat") data.darurat++;
+        else if (prio === "penting") data.penting++;
+        else data.biasa++;
+        
+        const status = (item.status || "").toLowerCase();
+        if (status === "selesai") data.statusSelesai++;
+        else data.statusProses++;
+        
+        const name = item.name || "Unknown";
+        if (!data.usersData[name]) data.usersData[name] = { timestamps: [] };
+        data.usersData[name].timestamps.push({ date: item.time?.split(" ")[0] || "???" });
+      });
+    }
+    
+    updateCharts(data);
+    document.getElementById('loadingOverlay').style.display = 'none';
+  });
+</script>
+
+<script>
+  function closeModal() {
+    document.getElementById('customModal').style.display = 'none';
+  }
+
+  function openModal(title, content) {
+    document.getElementById('modalTitle').innerHTML = title;
+    document.getElementById('modalContent').innerHTML = content;
+    document.getElementById('customModal').style.display = 'flex';
+  }
+
+  window.addEventListener('click', function (e) {
+    const modal = document.getElementById('customModal');
+    const modalBox = modal.querySelector('.modal');
+    if (e.target === modal && !modalBox.contains(e.target)) {
+      closeModal();
+    }
+  });
+
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      closeModal();
+    }
+  });
+</script>
+
+
+
+<div class="modal-overlay" id="customModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <h2 id="modalTitle">Judul</h2>
+    <p id="modalContent">Isi konten akan dimuat di sini...</p>
+  </div>
+</div>
+
+
+</body>
+</html>
