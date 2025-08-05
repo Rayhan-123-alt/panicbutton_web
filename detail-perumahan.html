@@ -150,75 +150,88 @@
 
     /* Responsive Mode */
     @media (max-width: 768px) {
-      
-      body {
-        padding: 15px;
-      }
+  body {
+    padding: 15px;
+  }
 
-      h1 {
-        font-size: 1.6rem;
-      }
+  h1 {
+    font-size: 1.6rem;
+  }
 
-      table, thead, tbody, th, td, tr {
-        display: block;
-      }
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
 
-      thead {
-        display: none;
-      }
+  thead {
+    display: none;
+  }
 
-      tbody {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-      }
+  tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
 
-      tr {
-        background-color: #fff;
-        padding: 16px;
-        border: 1px solid #ddd;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-      }
+  tr {
+    background-color: #fff;
+    padding: 16px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+  }
 
-      td {
-        border: none;
-        padding: 6px 0;
-        position: relative;
-      }
+  td {
+    border: none;
+    padding: 6px 10px;
+    flex: 1 1 45%; /* setiap kolom maksimal 2 item per baris */
+    min-width: 140px;
+    box-sizing: border-box;
+    background: #f9f9f9;
+    border-radius: 8px;
+    font-size: 15px;
+  }
 
-      td::before {
-        content: attr(data-label);
-        font-weight: 700;
-        display: block;
-        color: #2575fc;
-        margin-bottom: 4px;
-        font-size: 14px;
-      }
+  td[data-label="Pesan"] {
+    flex: 1 1 100%; /* Pesan tetap satu baris penuh */
+  }
 
-      #paginationContainer {
-      flex-direction: column;
-      align-items: flex-start;
-    }
+  td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    display: block;
+    color: #2575fc;
+    margin-bottom: 4px;
+    font-size: 13px;
+  }
 
-    #paginationContainer > span {
-      margin-bottom: 8px;
-    }
+  #paginationContainer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
-    #paginationContainer > div {
-      width: 100%;
-      justify-content: flex-start;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+  #paginationContainer > span {
+    margin-bottom: 8px;
+  }
 
-    #paginationContainer button {
-      flex: 1 1 auto; /* tombol bisa melebar memenuhi ruang */
-      margin-left: 0;
-      padding: 10px;
-      font-size: 16px;
-    }
-    }
+  #paginationContainer > div {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  #paginationContainer button {
+    flex: 1 1 auto;
+    margin-left: 0;
+    padding: 10px;
+    font-size: 16px;
+  }
+}
+
 
     #filterControls select,
   #filterControls input {

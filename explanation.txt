@@ -1,0 +1,17 @@
+1. index.html
+file index.html untuk tampilan utamanya, termasuk dashboard, card, dan peringatan panic button nya
+
+2. rekap.html dan detail-perumahan.html
+file rekap.html untuk tampilan rekap data perumahan
+disana nanti akan ada tombol Lihat Detail, akan diarahkan ke file detail-perumahan.html?key={perumahanID}
+    nah perumahanID itu diambil sesuai dari key database-nya, jadi misal anda mengklik 
+    perumahan Sulisno, maka url nya akan menjadi detail-perumahan.html?key=perumahan_sulisno, 
+    nanti seluruh datanya hanya akan diambil dari perumahan_sulisno saja
+
+3. user.html
+ini biasa, untuk tampilan siapa saja user yang registrasi dan di perumahan mana
+
+4. stats.html dan detail-grafik.html
+ini konsepnya sama dengan poin nomor 2, ambil key nya saja
+
+terimakasih
