@@ -9,10 +9,26 @@
   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
   <link rel="icon" href="http://103.255.15.227/lifemedia_logo.png?v=1753515070" type="image/png">
+  <!-- Firebase JS SDK v8 (yang cocok dengan kode kamu) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
+  <!-- SweetAlert2 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap" rel="stylesheet">
 
   <style>
+    /* Tambahan styling opsional */
+.swal2-modern-popup {
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.swal2-title-custom {
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
+}
     /* Loading Overlay Fullscreen */
     #loadingOverlay {
       position: fixed;
@@ -597,6 +613,7 @@
       <li><a href="rekap.html">Rekap Data</a></li>
       <li><a href="user.html">User Registrations</a></li>
       <li><a href="stats.html">Statistik</a></li>
+      <li><a href="#" id="quick-message">Quick Message</a></li>
       <!-- <li><a href="#">Button</a></li> -->
     </ul>
   </nav>
@@ -719,7 +736,7 @@
   import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
 
   const firebaseConfig = {
-    apiKey: "----",
+    apiKey: "--",
     authDomain: "--",
     databaseURL: "--",
     projectId: "--",
@@ -799,7 +816,7 @@
     statusCard.style.color = '';
 
     const mainState = (latestPerumahan?.buzzers?.main?.state || 'off').toLowerCase();
-    const priority = (latestPerumahan?.buzzers?.main?.priority || 'off').toLowerCase();
+    const priority = (latestMonitor?.priority || 'off').toLowerCase();
 
     if (mainState === 'on') {
       statusText.textContent = 'ON';
@@ -902,7 +919,249 @@
       liveAlertBox.style.borderLeftColor = "#999";
     }
   });
+
+  firebase.initializeApp(firebaseConfig);
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.getElementById("quick-message").addEventListener("click", async function (e) {
+  e.preventDefault();
+  const triggerBtn = e.currentTarget;
+  const dbRef = firebase.database().ref("global_quick_messages");
+
+  triggerBtn.disabled = true;
+
+  // Loading awal
+  Swal.fire({
+    title: 'Mohon tunggu...',
+    html: 'Mengambil data quick messages...',
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
+  });
+
+  let msgs = {};
+  try {
+    const snapshot = await dbRef.once("value");
+    msgs = snapshot.val() || {};
+  } catch (err) {
+    Swal.fire('Error', 'Gagal mengambil data: ' + err.message, 'error');
+    triggerBtn.disabled = false;
+    return;
+  }
+  Swal.close();
+
+  // Escape helper
+  function escapeHtml(str='') {
+    return String(str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  // Modal content
+  const modalHTML = `
+    <div style="padding:12px;box-sizing:border-box;max-height:520px;overflow:hidden;">
+      <input id="searchMsgInput" type="text" placeholder="Cari pesan..." 
+        style="width:100%;padding:10px;margin-bottom:12px;border:1px solid #ddd;border-radius:8px;">
+      <div style="border:1px solid #eee;border-radius:8px;max-height:280px;overflow:auto;background:#fff;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th style="text-align:center;padding:8px;border-bottom:1px solid #f5f5f5;">Pesan</th>
+              <th style="width:140px;text-align:center;padding:8px;border-bottom:1px solid #f5f5f5;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="msgsTbody">
+            ${Object.keys(msgs).map(key => `
+              <tr data-id="${key}" data-text="${escapeHtml(msgs[key])}">
+                <td class="msg-text" style="padding:10px;border-bottom:1px solid #fbfbfb;">${escapeHtml(msgs[key])}</td>
+                <td style="padding:8px;text-align:center;border-bottom:1px solid #fbfbfb;">
+                  <button class="edit-btn" data-id="${key}" style="margin-right:4px;padding:4px 6px;border-radius:6px;border:none;background:#ffc107;cursor:pointer;">Edit</button>
+                  <button class="delete-btn" data-id="${key}" style="padding:4px 6px;border-radius:6px;border:none;background:#dc3545;color:#fff;cursor:pointer;">Hapus</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;">
+        <input id="newMsgInput" type="text" placeholder="Tulis pesan baru..." 
+          style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px;">
+        <button id="addMsgBtn" style="padding:10px 12px;border-radius:8px;border:none;background:#28a745;color:#fff;cursor:pointer; font-size:15px;">Tambah</button>
+      </div>
+    </div>
+  `;
+
+  Swal.fire({
+    title: 'Kelola Quick Messages',
+    html: modalHTML,
+    width: 520,
+    showConfirmButton: false,
+    showCloseButton: true,
+    didOpen: () => {
+      const container = Swal.getHtmlContainer();
+      const tbody = container.querySelector('#msgsTbody');
+      const searchInput = container.querySelector('#searchMsgInput');
+      const newMsgInput = container.querySelector('#newMsgInput');
+      const addBtn = container.querySelector('#addMsgBtn');
+
+      // Filter pencarian
+      searchInput.addEventListener('input', (ev) => {
+        const q = (ev.target.value || '').toLowerCase();
+        Array.from(tbody.querySelectorAll('tr')).forEach(tr => {
+          const text = (tr.getAttribute('data-text') || '').toLowerCase();
+          tr.style.display = text.includes(q) ? '' : 'none';
+        });
+      });
+
+      // Tambah pesan baru
+      addBtn.addEventListener('click', async () => {
+        const v = newMsgInput.value.trim();
+        if (!v) return Swal.fire('Error','Pesan tidak boleh kosong','error');
+        addBtn.disabled = true;
+        const newRef = dbRef.push();
+        await newRef.set(v);
+        const key = newRef.key;
+        tbody.insertAdjacentHTML('beforeend', `
+          <tr data-id="${key}" data-text="${escapeHtml(v)}">
+            <td class="msg-text" style="padding:10px;border-bottom:1px solid #fbfbfb;">${escapeHtml(v)}</td>
+            <td style="padding:8px;text-align:center;border-bottom:1px solid #fbfbfb;">
+              <button class="edit-btn" data-id="${key}" style="margin-right:4px;padding:4px 6px;border-radius:6px;border:none;background:#ffc107;cursor:pointer;">Edit</button>
+              <button class="delete-btn" data-id="${key}" style="padding:4px 6px;border-radius:6px;border:none;background:#dc3545;color:#fff;cursor:pointer;">Hapus</button>
+            </td>
+          </tr>
+        `);
+        newMsgInput.value = '';
+        addBtn.disabled = false;
+      });
+
+      // Event delegation edit inline & hapus
+      tbody.addEventListener('click', async (ev) => {
+        const tr = ev.target.closest('tr');
+        const id = tr?.getAttribute('data-id');
+        if (!id) return;
+
+        // Edit inline
+if (ev.target.classList.contains('edit-btn')) {
+  const tdText = tr.querySelector('.msg-text');
+  const oldText = tr.getAttribute('data-text');
+
+  tdText.innerHTML = `
+    <input type="text" class="edit-input" 
+      value="${oldText}" 
+      style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;">
+  `;
+
+  // Tombol simpan: centang ✓
+  ev.target.textContent = '✓';
+  ev.target.style.padding = '4px 8px';
+  ev.target.style.fontSize = '16px';
+  ev.target.style.lineHeight = '1';
+  ev.target.style.borderRadius = '6px';
+  ev.target.style.backgroundColor = '#28a745'; // hijau
+  ev.target.style.border = 'none';
+  ev.target.style.color = '#fff';
+  ev.target.style.cursor = 'pointer';
+
+  ev.target.classList.remove('edit-btn');
+  ev.target.classList.add('save-btn');
+
+  // Sembunyikan tombol hapus
+  const delBtn = tr.querySelector('.delete-btn');
+  if (delBtn) delBtn.style.display = 'none';
+
+  // Tombol batal: silang ✕
+  const cancelBtn = document.createElement('button');
+  cancelBtn.textContent = '✕';
+  cancelBtn.classList.add('cancel-btn');
+  cancelBtn.style.cssText = `
+    padding:4px 8px;
+    border-radius:6px;
+    border:none;
+    background:#dc3545;  /* merah */
+    color:#fff;
+    cursor:pointer;
+    font-size:16px;
+    line-height:1;
+  `;
+
+  // Bungkus tombol simpan & batal biar rapi
+  const btnWrapper = document.createElement('div');
+  btnWrapper.style.display = 'flex';
+  btnWrapper.style.justifyContent = 'center';
+  btnWrapper.style.gap = '6px';
+
+  btnWrapper.appendChild(ev.target);
+  btnWrapper.appendChild(cancelBtn);
+
+  const tdActions = tr.querySelector('td:last-child');
+  tdActions.innerHTML = '';
+  tdActions.appendChild(btnWrapper);
+}
+
+
+        // Simpan perubahan
+        else if (ev.target.classList.contains('save-btn')) {
+          const newVal = tr.querySelector('.edit-input').value.trim();
+          if (!newVal) return Swal.fire('Error','Pesan tidak boleh kosong','error');
+
+          await dbRef.child(id).set(newVal);
+          tr.setAttribute('data-text', escapeHtml(newVal));
+          tr.querySelector('.msg-text').textContent = newVal;
+
+          // Kembalikan tombol awal
+          const tdActions = tr.querySelector('td:last-child');
+          tdActions.innerHTML = `
+            <button class="edit-btn" data-id="${id}" 
+              style="margin-right:4px;padding:4px 6px;border-radius:6px;border:none;background:#ffc107;cursor:pointer;">
+              Edit
+            </button>
+            <button class="delete-btn" data-id="${id}" 
+              style="padding:4px 6px;border-radius:6px;border:none;background:#dc3545;color:#fff;cursor:pointer;">
+              Hapus
+            </button>
+          `;
+        }
+
+        // Batal edit
+        else if (ev.target.classList.contains('cancel-btn')) {
+          const oldText = tr.getAttribute('data-text');
+          tr.querySelector('.msg-text').textContent = oldText;
+
+          // Kembalikan tombol awal
+          const tdActions = tr.querySelector('td:last-child');
+          tdActions.innerHTML = `
+            <button class="edit-btn" data-id="${id}" 
+              style="margin-right:4px;padding:4px 6px;border-radius:6px;border:none;background:#ffc107;cursor:pointer;">
+              Edit
+            </button>
+            <button class="delete-btn" data-id="${id}" 
+              style="padding:4px 6px;border-radius:6px;border:none;background:#dc3545;color:#fff;cursor:pointer;">
+              Hapus
+            </button>
+          `;
+        }
+
+        // Hapus langsung (dengan konfirmasi kecil di baris)
+        else if (ev.target.classList.contains('delete-btn')) {
+          if (confirm('Yakin hapus pesan ini?')) {
+            await dbRef.child(id).remove();
+            tr.remove();
+          }
+        }
+      });
+    },
+    willClose: () => {
+      triggerBtn.disabled = false;
+    }
+  });
+});
+</script>
+
+
+
 
 </body>
 </html>

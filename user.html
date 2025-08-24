@@ -46,6 +46,22 @@
       font-size: 14px;
     }
 
+    .action-btns {
+      display: flex;
+      gap: 10px;
+    }
+
+    .add-user-btn {
+      padding: 10px 16px;
+      background: #00796b;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
     .filters {
       display: flex;
       gap: 16px;
@@ -98,6 +114,158 @@
       min-width: 280px;
       max-width: 400px;
     }
+
+    /* Modal */
+    .modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.modal-content {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  animation: slideUp 0.3s ease-in-out;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #009e60;
+  font-size: 1.3rem;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #aaa;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.close-modal:hover {
+  color: #009e60;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #333;
+}
+
+.form-group select,
+.form-group input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 14px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.form-group select:focus,
+.form-group input:focus {
+  outline: none;
+  border-color: #009e60;
+  box-shadow: 0 0 0 3px rgba(0,158,96,0.15);
+}
+
+.role-select {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.role-select select {
+  flex: 1;
+}
+
+.custom-role-input {
+  display: none;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.modal-footer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.btn-cancel {
+  background: #e0e0e0;
+  color: #333;
+}
+.btn-cancel:hover {
+  background: #ccc;
+}
+
+.btn-save {
+  background: #009e60;
+  color: white;
+}
+.btn-save:hover {
+  background: #00794b;
+  transform: translateY(-1px);
+}
+
+/* Animasi */
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+
+@keyframes slideUp {
+  from {transform: translateY(20px); opacity: 0;}
+  to {transform: translateY(0); opacity: 1;}
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  box-sizing: border-box; /* supaya padding tidak memotong width */
+}
 
     /* Container Kartu */
     .card-container {
@@ -193,129 +361,120 @@
 
     /* Responsive: Mobile */
     @media (max-width: 768px) {
-
-      #prevPage {
-        margin-right: 5px;
+      .header-bar h2 {
+        font-size: 16px;
+      }
+      #paginationContainer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 8px;
+        margin-top: 16px;
       }
 
-      #paginationContainer {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Memusatkan secara horizontal */
-    text-align: center;  /* Memusatkan teks */
-    gap: 8px;
-    margin-top: 16px;
-  }
+      #paginationContainer button {
+        padding: 6px 12px;
+        font-size: 1rem;
+      }
 
-  #paginationContainer button {
-    padding: 6px 12px;
-    font-size: 1rem;
-  }
       #perumahanFilter, #roleFilter {
         margin-bottom: 5px;
       }
-  .card-container {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
 
-  .filters {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px; /* beri jarak antar elemen */
-    align-items: center; /* Pusatkan horizontal */
-    padding: 0 16px;
-  }
+      .card-container {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
 
-  .custom-select-wrapper {
-    width: 100%;
-    max-width: 300px; /* Biar tetap rapi di tengah */
-  }
+      .filters {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        align-items: center;
+        padding: 0 16px;
+      }
 
-  select {
-    width: 100%;
-    padding: 11px;
-    font-size: 1rem;
-  }
+      .custom-select-wrapper {
+        width: 100%;
+        max-width: 300px;
+      }
 
-  input[type="text"],
-  #searchInput {
-    width: 100%;
-    padding: 11px;
-    font-size: 1rem;
-    box-sizing: border-box;
-    margin-right: 0;
-  }
-}
+      select, input[type="text"], #searchInput {
+        width: 100%;
+        padding: 11px;
+        font-size: 1rem;
+        box-sizing: border-box;
+      }
+    }
 
     .user-card {
-  background-color: #f4f4f4;
-  border-radius: 8px;
-  padding: 16px;
-  margin: 8px 0;
-  box-shadow: 1px 1px 4px rgba(0,0,0,0.1);
-}
+      background-color: #f4f4f4;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 8px 0;
+      box-shadow: 1px 1px 4px rgba(0,0,0,0.1);
+    }
 
-.admin-card {
-  background-color: #e6fed8; /* beda warna untuk admin */
-  border: .7px solid #4af2af;
-}
+    .admin-card {
+      background-color: #e6fed8;
+      border: .7px solid #4af2af;
+    }
 
-.user-card-role {
-  background-color: #ffffff;
-  /* border: 2px solid #16a085; misalnya hijau */
-}
+    .user-card-role {
+      background-color: #ffffff;
+    }
 
-.role-badge {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: white;
-}
+    .role-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: white;
+    }
 
-.role-badge.admin {
-  background-color: #d9534f; /* merah */
-}
+    .role-badge.admin {
+      background-color: #d9534f;
+    }
 
-.role-badge.user {
-  background-color: #0275d8; /* biru */
-}
+    .role-badge.user {
+      background-color: #0275d8;
+    }
 
-.role-badge.unknown {
-  background-color: #6c757d; /* abu-abu */
-}
-
-
+    .role-badge.unknown {
+      background-color: #6c757d;
+    }
   </style>
 </head>
 <body>
   <div class="header-bar">
     <a href="/" class="back-btn">← Dashboard</a>
     <h2>Daftar Pengguna</h2>
+    <div class="action-btns">
+      <button class="add-user-btn" id="openAddUserModal">Tambah User</button>
+    </div>
   </div>
 
   <div class="filters">
-  <div class="custom-select-wrapper">
-    <select id="perumahanFilter">
-      <option value="">Semua Perumahan</option>
-    </select>
+    <div class="custom-select-wrapper">
+      <select id="perumahanFilter">
+        <option value="">Semua Perumahan</option>
+      </select>
+    </div>
+    <div class="custom-select-wrapper">
+      <select id="roleFilter">
+        <option value="">Semua Role</option>
+        <option value="user">User</option>
+        <option value="admin">Admin/Satpam</option>
+      </select>
+    </div>
+    <input type="text" id="searchInput" placeholder="Cari nama atau nomor rumah..." />
   </div>
-  <div class="custom-select-wrapper">
-    <select id="roleFilter">
-      <option value="">Semua Role</option>
-      <option value="user">User</option>
-      <option value="admin">Admin/Satpam</option>
-    </select>
-  </div>
-  <input type="text" id="searchInput" placeholder="Cari nama atau nomor rumah..." />
-</div>
 
-
-  <!-- Container Kartu Saja (Tidak Ada Tabel) -->
+  <!-- Container Kartu -->
   <div class="card-container" id="cardContainer">
     <!-- Kartu pengguna akan ditambahkan via JavaScript -->
   </div>
@@ -329,13 +488,64 @@
     </div>
   </div>
 
+  <!-- Modal Tambah User -->
+  <div class="modal" id="addUserModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Tambah User</h3>
+        <button class="close-modal" id="closeModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="perumahanSelect">Pilih Perumahan</label>
+          <select id="perumahanSelect" required>
+            <option value="">--- Pilih Perumahan ---</option>
+            <!-- Opsi akan diisi via JS -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="userName">Nama Lengkap</label>
+          <input type="text" id="userName" placeholder="Masukkan nama pengguna" required />
+        </div>
+        <div class="form-group">
+          <label for="houseNumber">Nomor Rumah</label>
+          <input type="text" id="houseNumber" placeholder="Contoh: A1, B2, 101" required />
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Masukkan password" required />
+        </div>
+        <div class="form-group">
+          <label>Role</label>
+          <div class="role-select">
+            <select id="roleSelect">
+              <option value="admin">Admin / Satpam</option>
+              <!-- <option value="user">User</option> -->
+              <option value="custom">Lainnya (Isi Sendiri)</option>
+            </select>
+            <input
+              type="text"
+              id="customRoleInput"
+              placeholder="Masukkan role"
+              class="custom-role-input"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-cancel" id="cancelBtn">Batal</button>
+        <button class="btn btn-save" id="saveUserBtn">Simpan</button>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+    import { getDatabase, ref, onValue, push, set } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
 
     const firebaseConfig = {
-    apiKey: "--",
-    authDomain: "---",
+    apiKey: "---",
+    authDomain: "--",
     databaseURL: "--",
     projectId: "--",
     storageBucket: "--",
@@ -347,17 +557,46 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    // Elemen DOM
     const cardContainer = document.getElementById("cardContainer");
     const perumahanFilter = document.getElementById("perumahanFilter");
     const roleFilter = document.getElementById("roleFilter");
     const searchInput = document.getElementById("searchInput");
 
+    const addUserModal = document.getElementById("addUserModal");
+    const openAddUserModal = document.getElementById("openAddUserModal");
+    const closeModal = document.getElementById("closeModal");
+    const cancelBtn = document.getElementById("cancelBtn");
+    const saveUserBtn = document.getElementById("saveUserBtn");
+
+    const perumahanSelect = document.getElementById("perumahanSelect");
+    const userNameInput = document.getElementById("userName");
+    const houseNumberInput = document.getElementById("houseNumber");
+    const passwordInput = document.getElementById("password");
+    const roleSelect = document.getElementById("roleSelect");
+    const customRoleInput = document.getElementById("customRoleInput");
+
     let allUsers = [];
     let filteredUsers = [];
     let currentPage = 1;
-    const usersPerPage = 9; // 3x3 grid
+    const usersPerPage = 9;
 
-    // Ambil data dari Firebase
+    // Ambil daftar perumahan dari /daftar_perumahan untuk dropdown
+    const daftarPerumahanRef = ref(db, "daftar_perumahan");
+    onValue(daftarPerumahanRef, (snapshot) => {
+      const data = snapshot.val();
+      perumahanSelect.innerHTML = '<option value="">--- Pilih Perumahan ---</option>';
+      if (data) {
+        Object.entries(data).forEach(([key, name]) => {
+          const option = document.createElement("option");
+          option.value = key;
+          option.textContent = name;
+          perumahanSelect.appendChild(option);
+        });
+      }
+    });
+
+    // Ambil data pengguna dari /perumahan
     const perumahanRef = ref(db, "perumahan");
     onValue(perumahanRef, (snapshot) => {
       const data = snapshot.val();
@@ -396,60 +635,57 @@
 
     // Render Kartu
     function renderCards(users) {
-  cardContainer.innerHTML = "";
-  if (users.length === 0) {
-    cardContainer.innerHTML = `
-      <div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 20px;">
-        <i class="fas fa-user-slash" style="font-size: 48px; margin-bottom: 12px; opacity: 0.5;"></i>
-        <p>Tidak ada data pengguna.</p>
-      </div>`;
-    return;
-  }
+      cardContainer.innerHTML = "";
+      if (users.length === 0) {
+        cardContainer.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 20px;">
+            <i class="fas fa-user-slash" style="font-size: 48px; margin-bottom: 12px; opacity: 0.5;"></i>
+            <p>Tidak ada data pengguna.</p>
+          </div>`;
+        return;
+      }
 
-  users.forEach((user, index) => {
-    const card = document.createElement("div");
-    card.className = "user-card";
+      users.forEach((user, index) => {
+        const card = document.createElement("div");
+        card.className = "user-card";
 
-    // Cek role dan tambahkan kelas/ubah style sesuai role
-    if ((user.role || '').toUpperCase() === 'ADMIN') {
-      card.classList.add('admin-card');
-    } else if ((user.role || '').toUpperCase() === 'USER') {
-      card.classList.add('user-card-role');  // nama kelas bisa disesuaikan
+        if ((user.role || '').toUpperCase() === 'ADMIN') {
+          card.classList.add('admin-card');
+        } else if ((user.role || '').toUpperCase() === 'USER') {
+          card.classList.add('user-card-role');
+        }
+
+        card.innerHTML = `
+          <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 6px;">
+            ${index + 1}. ${user.name || '-'}
+          </div>
+          <div style="margin-bottom: 4px;">
+            <i class="fas fa-home"></i>
+            <span>No. Rumah: <strong>${user.houseNumber || '-'}</strong></span>
+          </div>
+          <div style="margin-bottom: 4px;">
+            <i class="fas fa-phone"></i>
+            <span>No. HP: <strong>${user.phoneNumber || '-'}</strong></span>
+          </div>
+          <div style="margin-bottom: 4px;">
+            <i class="fas fa-lock"></i>
+            <span>Password: <strong>${user.password || '-'}</strong></span>
+          </div>
+          <div style="margin-bottom: 4px;">
+            <i class="fas fa-user-tag"></i>
+            <span class="role-badge ${user.role?.toLowerCase() || 'unknown'}">
+              ${user.role === 'admin' ? 'ADMIN / SATPAM' : 'USER'}
+            </span>
+          </div>
+          <div>
+            <i class="fas fa-building"></i>
+            <span>${user.perumahanName || '-'}</span>
+          </div>
+        `;
+
+        cardContainer.appendChild(card);
+      });
     }
-
-    card.innerHTML = `
-  <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 6px;">
-    ${index + 1}. ${user.name || '-'}
-  </div>
-  <div style="margin-bottom: 4px;">
-    <i class="fas fa-home"></i>
-    <span>No. Rumah: <strong>${user.houseNumber || '-'}</strong></span>
-  </div>
-  <div style="margin-bottom: 4px;">
-    <i class="fas fa-phone"></i>
-    <span>No. HP: <strong>${user.phoneNumber || '-'}</strong></span>
-  </div>
-  <div style="margin-bottom: 4px;">
-    <i class="fas fa-lock"></i>
-    <span>Password: <strong>${user.password || '-'}</strong></span>
-  </div>
-  <div style="margin-bottom: 4px;">
-    <i class="fas fa-user-tag"></i>
-    <span class="role-badge ${user.role?.toLowerCase() || 'unknown'}">
-      ${user.role === 'admin' ? 'ADMIN / SATPAM' : 'USER'}
-    </span>
-  </div>
-
-  <div>
-    <i class="fas fa-building"></i>
-    <span>${user.perumahanName || '-'}</span>
-  </div>
-`;
-
-    cardContainer.appendChild(card);
-  });
-}
-
 
     // Filter Data
     function applyFilters() {
@@ -474,7 +710,6 @@
       updatePagination();
     }
 
-    // Update Pagination & Render
     function updatePagination() {
       const startIndex = (currentPage - 1) * usersPerPage;
       const endIndex = Math.min(startIndex + usersPerPage, filteredUsers.length);
@@ -488,6 +723,84 @@
       document.getElementById("prevPage").disabled = currentPage === 1;
       document.getElementById("nextPage").disabled = endIndex >= filteredUsers.length;
     }
+
+    // Modal Logic
+    openAddUserModal.addEventListener("click", () => {
+      addUserModal.style.display = "flex";
+    });
+
+    [closeModal, cancelBtn].forEach(btn => {
+      btn.addEventListener("click", () => {
+        addUserModal.style.display = "none";
+        resetForm();
+      });
+    });
+
+    window.addEventListener("click", (e) => {
+      if (e.target === addUserModal) {
+        addUserModal.style.display = "none";
+        resetForm();
+      }
+    });
+
+    roleSelect.addEventListener("change", () => {
+      if (roleSelect.value === "custom") {
+        customRoleInput.style.display = "block";
+      } else {
+        customRoleInput.style.display = "none";
+      }
+    });
+
+    function resetForm() {
+      perumahanSelect.value = "";
+      userNameInput.value = "";
+      houseNumberInput.value = "";
+      passwordInput.value = "";
+      roleSelect.value = "user";
+      customRoleInput.style.display = "none";
+      customRoleInput.value = "";
+    }
+
+    // Simpan User ke Firebase
+    saveUserBtn.addEventListener("click", async () => {
+      const perumahanKey = perumahanSelect.value;
+      const name = userNameInput.value.trim();
+      const houseNumber = houseNumberInput.value.trim();
+      const password = passwordInput.value.trim();
+      const roleOption = roleSelect.value;
+      const customRole = customRoleInput.value.trim();
+
+      if (!perumahanKey || !name || !houseNumber || !password) {
+        alert("Semua field wajib diisi!");
+        return;
+      }
+
+      const role = roleOption === "custom" ? customRole || "custom" : roleOption;
+
+      try {
+        const newUserRef = push(ref(db, `perumahan/${perumahanKey}/users`));
+        await set(newUserRef, {
+          coverImage: "",
+          houseNumber,
+          name,
+          note: "",
+          password,
+          phoneNumber: "",
+          profileImage: "",
+          role: role.toLowerCase()
+        });
+
+        alert("User berhasil ditambahkan!");
+        addUserModal.style.display = "none";
+        resetForm();
+
+        // Refresh data
+        const snapshot = await onValue(perumahanRef, () => {}); // Re-fetch
+      } catch (error) {
+        console.error("Error adding user: ", error);
+        alert("Gagal menambahkan user.");
+      }
+    });
 
     // Event Listeners
     roleFilter.addEventListener("change", applyFilters);

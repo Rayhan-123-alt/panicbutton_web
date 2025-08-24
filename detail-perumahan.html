@@ -30,15 +30,15 @@
 
     th:nth-child(6),
     td:nth-child(6) {
-      width: 200px;
-      max-width:200px;
+      width: 230px;
+      max-width:230px;
       text-align: center;
     }
 
     th:nth-child(7),
     td:nth-child(7) {
-      width: 180px;
-      max-width:180px;
+      width: 170px;
+      max-width:170px;
       text-align: center;
     }
 
@@ -306,12 +306,60 @@
     font-size: 16px;
     color: #333;
   }
+
+  @media (max-width: 768px) {
+  .container > div {
+    flex-direction: column;      /* ubah jadi kolom */
+    align-items: stretch;        /* biar child bisa rata sendiri */
+  }
+
+  .container > div > div {
+    flex: none !important;       /* matikan flex:1 biar tidak maksa lebar */
+    margin: 5px 0;               /* kasih jarak antar elemen */
+  }
+
+  .container > div > div:first-child {
+    text-align: left;            /* tombol kembali tetap kiri */
+    margin-bottom: 15px;
+  }
+
+  .container > div > div:nth-child(2) {
+    text-align: center;          /* tombol hapus tetap tengah */
+  }
+
+  .container > div > div:last-child {
+    display: none;               /* kolom kanan kosong disembunyikan di HP */
+  }
+
+  #clearAllBtn {
+    font-size: 13px;   /* lebih kecil dibanding desktop */
+  }
+}
+
   </style>
 </head>
 <body>
   <div class="container">
     <h1 id="title">Detail Monitor</h1>
-    <a href="rekap.html" class="btn-back">← Kembali ke Rekap</a>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0;">
+      <!-- Kolom kiri -->
+      <div style="flex:1; text-align:left;">
+        <a href="rekap.html" class="btn-back" style="display:inline;">← Kembali ke Rekap</a>
+      </div>
+
+      <!-- Kolom tengah -->
+      <div style="flex:1; text-align:center;">
+        <button id="clearAllBtn" style="background-color:#e74c3c; padding:10px 20px; border-radius:8px; color:#fff; font-weight:600; border:none; cursor:pointer;">
+          🗑️ Hapus Semua Monitor
+        </button>
+      </div>
+
+      <!-- Kolom kanan (kosong) -->
+      <div style="flex:1;"></div>
+    </div>
+  </div>
+
     <table id="monitorTable">
       <thead>
         <tr>
@@ -328,9 +376,10 @@
     </table>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { getDatabase, ref, get, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "--",
@@ -379,6 +428,38 @@
     </div>
   `);
 
+  const clearAllBtn = document.getElementById("clearAllBtn");
+  clearAllBtn.addEventListener("click", async () => {
+    Swal.fire({
+      title: "Apakah kamu yakin?",
+      text: "Semua data monitor akan dihapus permanen!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Ya, hapus semua",
+      cancelButtonText: "Batal"
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const monitorRef = ref(db, `perumahan/${key}/monitor`);
+        try {
+          await remove(monitorRef);
+          Swal.fire("Terhapus!", "Semua data monitor berhasil dihapus.", "success");
+          tableBody.innerHTML = `
+            <tr>
+              <td colspan="7" style="text-align:center; padding:30px; color:#888;">
+                Tidak ada data monitor ditemukan.
+              </td>
+            </tr>`;
+            pagination.innerHTML = ""; // <--- fix pagination bug
+        } catch (error) {
+          Swal.fire("Gagal", "Terjadi kesalahan: " + error.message, "error");
+          console.error(error);
+        }
+      }
+    });
+  });
+
   // Pagination
   tableElement.insertAdjacentHTML("afterend", `<div id="pagination" style="margin-top:20px;text-align:center;"></div>`);
 
@@ -398,6 +479,7 @@
     const snapshot = await get(monitorRef);
     if (!snapshot.exists()) {
       tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#888;">Tidak ada data monitor ditemukan.</td></tr>';
+      pagination.innerHTML = ""; // <--- fix pagination bug
       return;
     }
     allData = Object.values(snapshot.val()).map(item => ({
